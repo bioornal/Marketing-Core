@@ -580,3 +580,35 @@ Aplica a TODOS los selects que usan `.cs-brand-select` — patrón de grilla, le
 - Considerar override de ángulo por slot (hoy es global a la serie). Útil para series largas donde un slot puntual merece otro tono.
 - El campo `body` de los slides del carrusel sólo se renderiza en el caption del ZIP, NO sobre la imagen. Si en algún momento se quiere bilínea (headline grande + body chico) habría que crear un layout nuevo en `composer.js`.
 - Verificar que el ángulo "Antimarketing" no se confunda con la voz default de Selva (ya bastante coloquial). Probablemente cuando ambos están activos hay overlap — testear y refinar el promptInstruction si hace falta.
+
+---
+
+## Sesión 5 — Mejoras Visuales de Flyers Meta Ads, Palabras Resaltadas [corchetes] y Compilador Híbrido (2026-05-27)
+
+Se trabajó intensamente sobre el módulo de **Flyers Meta Ads** para resolver la desconexión estética reportada por el usuario (anuncios generados muy planos/oscuros y problemas con la inyección de textos de la IA).
+
+### Ajustes Estratégicos de Performance & Dialecto
+* **Dialecto Imperativo Estándar (Tuteo):** Para evitar los imperativos con acento rioplatense (ej: *automatizá, vendé, seguí*), implementamos una regla categórica y de prioridad absoluta en la IA de performance para forzar imperativos neutros en español estándar (ej: *automatiza, vende, sigue, descubre*).
+* **Foco Estratégico (Tiempo y Dinero):** Re-enfocamos la redacción de los copys para centrarse estrictamente en el retorno de inversión y ganancias operativas (tiempo y dinero ahorrado), eliminando las continuas comparaciones directas contra agencias tradicionales que saturaban el gancho.
+
+### Motor de Composición Canvas Local Ultra Premium
+Rediseñamos por completo el Canvas local (`composeFlyer` en `flyerAds.js`) para lograr los acabados de alto impacto publicitario presentes en las capturas de referencia:
+1. **Palabras Resaltadas en Renglones (`[corchetes]`):** 
+   * **El Bug:** La lógica anterior procesaba expresiones regulares por renglón. Si la apertura `[` y el cierre `]` quedaban en renglones diferentes por el salto de línea del titular, fallaba e imprimía los corchetes literales en blanco.
+   * **La Solución:** Implementamos un motor de parseo por palabras (`parseWordsWithHighlight`). Ahora la aplicación segmenta y etiqueta palabra por palabra de forma independiente **antes** de hacer el cálculo del salto de renglón (`fitFontSegments` + `wrapTextSegments`).
+   * **El Acabado:** Los corchetes son completamente removidos de la imagen final y cada palabra destacada se dibuja en el color de acento de la marca (`accent`) de forma pixel-perfect.
+2. **Sombra Tipográfica Tridimensional (Drop Shadow):** Aplicamos filtros de sombreado profundo en 3D sobre el titular y subtitular, dándoles relieve tipográfico y legibilidad absoluta sobre cualquier fondo complejo.
+3. **Cápsula de Cabecera Glassmorphism:** Rediseñamos el mango de la web de cabecera introduciéndolo dentro de una píldora de cristal translúcida y oscura con borde neón suave y un micro-punto indicador en color de acento.
+4. **Botón CTA con Icono:** El CTA del pie de flyer dibuja ahora un botón cápsula redondeado premium que incorpora un micro-icono de flecha `➔` integrado al final del texto.
+5. **Trazos Geométricos de Marca:** El lienzo dibuja sutiles figuras vectoriales en el fondo en baja opacidad (círculos concéntricos superiores, diamante flotante 3D y matriz de puntos neón en la esquina inferior izquierda) para darle una estética de diseño profesional.
+
+### Compilador de Prompts Híbrido Dinámico
+* **El Problema:** Al hacer clic en "Generar concepto ganador", la IA de texto sugería ganchos y escribía un prompt visual muy básico que sobrescribía la plantilla premium elegida por el usuario. Y por otro lado, las plantillas premium eran 100% estáticas (no sabían nada del rubro del negocio, ej: cabañas de Iguazú).
+* **La Solución (Compilador Híbrido):**
+  * Diseñamos `getVisualSubject` que traduce dinámicamente el **Tema / Idea** del anuncio (ej: *"cabañas en Puerto Iguazú sin web"*) a descripciones y elementos específicos (ej: pantallas de laptops mostrando sitios de viajes en la selva, letreros de neón con siluetas de cabañas).
+  * Modificamos el controlador `handleGenerateCopy` para que, al crear un concepto, **sobrescriba el prompt básico de la IA de texto y lo fusione automáticamente con la plantilla premium seleccionada**.
+  * **El resultado:** Cero discordancia. Cada generación garantiza la máxima calidad visual premium coherente con el negocio real.
+
+### Archivos Tocados en esta Sesión
+* [src/services/flyerAds.js](src/services/flyerAds.js) — inyección de `visualStyle` en prompts directores, helpers de dibujo (`drawRoundRect`, `drawBackgroundShapes`, `parseWordsWithHighlight`, `wrapTextSegments`, `fitFontSegments`) y reescritura de `composeFlyer` con soporte 3D shadow, glassmorphism y brackets multi-línea.
+* [src/components/FlyerAdsPanel.jsx](src/components/FlyerAdsPanel.jsx) — estados iniciales y `useEffect` con la temática por defecto de Cabañas de Puerto Iguazú y estilo `neon`, selector visual en UI, e inyección del compilador híbrido al generar copy o imágenes.

@@ -1,0 +1,13 @@
+[mcp_servers.imagegen]
+command = "npx"
+args = ["imagegen-mcp"]
+
+[mcp_servers.imagegen.env]
+OPENAI_API_KEY = ""
+
+[mcp_servers.nano-banana]
+command = "node"
+args = ['C:\Users\spezi\AppData\Roaming\npm\node_modules\nano-banana-mcp\dist\index.js']
+
+[mcp_servers.nano-banana.env]
+GEMINI_API_KEY = ""

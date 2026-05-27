@@ -22,7 +22,10 @@
       "Bash(pnpm build *)",
       "Bash(pkill -f \"vite\")",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5174/)",
-      "Bash(pkill -f vite)"
+      "Bash(pkill -f vite)",
+      "Bash(git add *)",
+      "Bash(git restore *)",
+      "Bash(git commit -m ' *)"
     ],
     "additionalDirectories": [
       "\\dev",

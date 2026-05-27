@@ -22,6 +22,10 @@ export default function WelcomePortal({
     setActiveTab('series');
   };
 
+  const handleOpenAds = () => {
+    setActiveTab('ads');
+  };
+
   return (
     <div className="wiz-shell" style={{ gridTemplateAreas: '"top top top" "main main main" "footer footer footer"', gridTemplateRows: '72px 1fr 64px' }}>
       {/* TOP HEADER */}
@@ -74,7 +78,7 @@ export default function WelcomePortal({
         </div>
 
         {/* Action pillars */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px', width: '100%', maxWidth: '880px', marginTop: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', width: '100%', maxWidth: '1120px', marginTop: '16px' }}>
           
           {/* Pillar 1: Post Individual */}
           <button
@@ -186,6 +190,63 @@ export default function WelcomePortal({
 
             <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 700, color: accent, fontFamily: 'var(--font-ui)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               <span>Abrir Planificador</span>
+              <i className="ph-bold ph-arrow-right" style={{ fontSize: '14px' }}></i>
+            </div>
+          </button>
+
+          {/* Pillar 3: Flyers Meta Ads */}
+          <button
+            type="button"
+            onClick={handleOpenAds}
+            className="wiz-card"
+            style={{
+              padding: '40px 32px',
+              gap: '20px',
+              background: 'rgba(255, 255, 255, 0.01)',
+              border: '1px solid var(--border)',
+              borderRadius: '16px',
+              textAlign: 'left',
+              transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 4px 30px rgba(0,0,0,0.2)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = accent;
+              e.currentTarget.style.transform = 'translateY(-4px)';
+              e.currentTarget.style.boxShadow = `0 20px 40px -12px rgba(0,0,0,0.6), 0 0 24px rgba(${accentRgb}, 0.06)`;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'var(--border)';
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 4px 30px rgba(0,0,0,0.2)';
+            }}
+          >
+            <div style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '12px',
+              background: `rgba(${accentRgb}, 0.06)`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: `1px solid rgba(${accentRgb}, 0.2)`
+            }}>
+              <i className="ph-bold ph-megaphone" style={{ fontSize: '24px', color: accent }}></i>
+            </div>
+
+            <div>
+              <h2 style={{ fontFamily: 'var(--font-ui)', fontSize: '20px', fontWeight: 800, color: '#FAFAFA', letterSpacing: '-0.5px', marginBottom: '8px' }}>
+                Flyers Meta Ads
+              </h2>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: '1.6' }}>
+                Panel de campaÃ±as para crear flyers publicitarios con copy decisivo, imagen GPT Image 2 y composiciÃ³n final lista para atraer seguidores cualificados.
+              </p>
+            </div>
+
+            <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 700, color: accent, fontFamily: 'var(--font-ui)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              <span>Crear Flyer</span>
               <i className="ph-bold ph-arrow-right" style={{ fontSize: '14px' }}></i>
             </div>
           </button>

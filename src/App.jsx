@@ -9,6 +9,7 @@ import { generateTextWithOpenAI, generateImageWithOpenAI, analyzeImageWithOpenAI
 import { renderTextBackgroundAsync } from './services/composer';
 import { generateImageWithFalAI } from './services/falai';
 import SeriesPlanner from './components/SeriesPlanner';
+import FlyerAdsPanel from './components/FlyerAdsPanel';
 import WelcomePortal from './components/WelcomePortal';
 import { useActiveSeries } from './hooks/useSeries';
 import './styles/series.css';
@@ -20,7 +21,7 @@ const BRANDS_DB = {
     "id": "selva-digital",
     "name": "Selva Digital",
     "slogan": "\"Tu web vendiendo 24/7. Pago único. Sin agencia.\"",
-    "website": "selvadigital.com",
+    "website": "selva-digital.vercel.app",
     "theme": {
       "accent": "#2BB673",
       "accentRgb": "43, 182, 115",
@@ -130,8 +131,8 @@ const BRANDS_DB = {
       ]
     },
     "seriesDefaults": {
-      "handle": "selva.digital",
-      "footer": "selva.digital",
+      "handle": "selva-digital.vercel.app",
+      "footer": "selva-digital.vercel.app",
       "reelCta": "Pedime presupuesto → Link en bio.",
       "industryFocus": "el mundo de las páginas web, los chatbots inteligentes, las apps a medida y los e-commerce, aplicado a la vida de quien trabaja con tecnología",
       "visualMood": "Estética DARK cinematográfica, no documental. Tipo cortometraje noir/Mr. Robot/Severance: penumbra profunda con UNA fuente de luz dominante (el monitor encendido, una lámpara de escritorio cálida, el brillo azul de una pantalla en la oscuridad). Paleta: negros densos, gris carbón, alguna nota cálida puntual de lámpara incandescente. Sensación: las 2 AM, foco silencioso, intensidad contenida, soledad productiva. Granulado fino editorial, profundidad de campo corta, lente 50mm. NO es realismo costumbrista, NO es luz de mediodía, NO son escenas alegres ni de barrio típico. Es la atmósfera de alguien resolviendo algo importante de noche.",
@@ -1760,6 +1761,21 @@ Cada objeto del array JSON debe tener la siguiente estructura exacta:
               setIsStudioOpen(true);
             }}
           />
+      ) : activeTab === 'ads' ? (
+        <FlyerAdsPanel
+          onLogout={handleLogout}
+          activeBrand={activeBrand}
+          allBrands={allBrands}
+          activeBrandId={activeBrandId}
+          setActiveBrandId={setActiveBrandId}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+          onOpenEditWizard={handleOpenEditWizard}
+          openaiKey={openaiKey}
+          geminiKey={geminiKey}
+          falaiKey={falaiKey}
+        />
       ) : (
         <WizardShell
           onLogout={handleLogout}

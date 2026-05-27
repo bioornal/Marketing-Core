@@ -26,7 +26,7 @@ export async function generateTextWithOpenAI(prompt, openaiKey, options = {}) {
   }
 }
 
-export async function generateImageWithOpenAI(imagePrompt, openaiKey) {
+export async function generateImageWithOpenAI(imagePrompt, openaiKey, options = {}) {
   const response = await fetch("https://api.openai.com/v1/images/generations", {
     method: "POST",
     headers: {
@@ -37,7 +37,8 @@ export async function generateImageWithOpenAI(imagePrompt, openaiKey) {
       model: "gpt-image-2",
       prompt: imagePrompt,
       n: 1,
-      size: "1024x1024"
+      size: options.size || "1024x1024",
+      quality: options.quality || "medium"
     })
   });
 
@@ -92,4 +93,3 @@ export async function analyzeImageWithOpenAI(base64Data, openaiKey, promptText) 
     throw new Error("Respuesta de análisis de OpenAI malformada o vacía.");
   }
 }
-

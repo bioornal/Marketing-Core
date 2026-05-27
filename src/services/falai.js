@@ -11,6 +11,19 @@ const ASPECT_TO_FAL_SIZE = {
   '9:16': 'portrait_16_9'
 };
 
+const FAL_TEXT_MODELS = {
+  schnell: {
+    url: 'https://fal.run/fal-ai/flux/schnell',
+    label: 'FLUX Schnell',
+    extraBody: { num_inference_steps: 4 }
+  },
+  flux2_pro: {
+    url: 'https://fal.run/fal-ai/flux-2-pro',
+    label: 'FLUX.2 Pro',
+    extraBody: {}
+  }
+};
+
 function resolveFalSize(aspectRatio) {
   if (!aspectRatio) return 'square_hd';
   return ASPECT_TO_FAL_SIZE[aspectRatio] || 'square_hd';
@@ -119,16 +132,17 @@ export async function generateImageWithFalAI(imagePrompt, falKey, opts = {}) {
   if (!falKey) {
     throw new Error("Clave de API de Fal.ai no configurada.");
   }
+  const model = FAL_TEXT_MODELS[opts.model] || FAL_TEXT_MODELS.schnell;
   return callFal({
-    url: "https://fal.run/fal-ai/flux/schnell",
+    url: model.url,
     body: {
       prompt: imagePrompt,
       image_size: resolveFalSize(opts.aspectRatio),
-      num_inference_steps: 4,
-      enable_safety_checker: true
+      enable_safety_checker: true,
+      ...model.extraBody
     },
     falKey,
-    modelLabel: 'FLUX Schnell'
+    modelLabel: model.label
   });
 }
 

@@ -4,16 +4,13 @@
 
 Operada por Christian A. Speziali (Córdoba, AR). Selva Digital es **una marca más dentro del sistema** —no la única—. Hoy conviven al menos `selva-digital`, `mega-muebles` e `impasto-pizzas`.
 
-> **Esta app internaliza el flujo que antes hacían los 4 agentes especializados** (`selva-strategy`, `selva-content`, `selva-copy`, `selva-seo`). Los agentes siguen disponibles en `.claude/agents/` para tareas one-off fuera de la app — ver sección "Enrutamiento" abajo.
+> **Esta app internaliza el flujo que antes hacían los 4 agentes especializados** (`selva-strategy`, `selva-content`, `selva-copy`, `selva-seo`). Los agentes siguen disponibles en `.Codex/agents/` para tareas one-off fuera de la app — ver sección "Enrutamiento" abajo.
 
 > 🆕 **2026-05-26 — Pestaña "Series" (Planificador de Grilla 3×3) rediseñada profundamente.**
 > Para retomar trabajo sobre esa feature, leer primero **[HANDOFF-GRID-PLANNER.md](HANDOFF-GRID-PLANNER.md)** — contiene arquitectura, decisiones clave (img2img → T2I + style extraction, marca como autora vs tema, `allowedObjects`/`forbiddenObjects` por marca, `visualMood` cinematográfico), modelo de datos, lista de archivos relevantes y roadmap pendiente (publicación auto a IG, etc.).
 
 > 🆕 **2026-05-26 (sesión 2) — Mejoras de calidad de vida en el planificador de grilla.**
 > Bugs críticos resueltos (sincronización Canvas↔Grid, persistencia de estado de Canvas, layout `data_metric` inexistente, doble `useSeries`) + features nuevas (campos editables de escena/objeto verde por slot, export ZIP single-click listo para IG con orden de publicación inverso, overlay de zona segura en CanvasStudio, prompts de FLUX endurecidos para monocromo estricto y verde de marca sin ser neón, layout del planificador con panel derecho más ancho). Ver sección "Sesión 2 — Mejoras de UX/calidad" en [HANDOFF-GRID-PLANNER.md](HANDOFF-GRID-PLANNER.md).
-
-> 🆕 **2026-05-27 (sesión 5) — Mejoras de Flyers de Meta Ads + Palabras Resaltadas [corchetes] + Sombras 3D + Compilador Híbrido.**
-> Ajuste de copies a español estándar neutro (tuteo: *automatiza, vende, escala*) y re-enfoque estratégico en tiempo/dinero ganados en lugar de debatir contra agencias. Creación de un Compilador Híbrido que fusiona el tema del brief (ej: cabañas en Puerto Iguazú sin web) en las pantallas y letreros de neón del prompt premium visual (mockups, neón, astronauta, minimalista). Integración del selector visual en UI de Imagen IA. Rediseño del Canvas de composición local: dibujo de geometrías decorativas de fondo (puntos, círculos), sombras profundas de tipografía para relieve 3D, cápsula glassmorphic de sitio web en cabecera y botón CTA redondeado con micro-ícono. Soporte completo para destacar palabras usando corchetes sin importar el salto de renglón (parseo segmentado por palabras). Ver sección "Sesión 5" en [HANDOFF-GRID-PLANNER.md](HANDOFF-GRID-PLANNER.md) para detalle completo.
 
 > 🆕 **2026-05-27 (sesión 4) — Carruseles + CTAs + ángulos persuasivos + fixes layout.**
 > Feature de **carrusel multi-slide** en cualquier slot de la grilla (slide 1 = portada del slot, slides 2..N en `slot.carouselSlides`). La IA escribe el copy de los slides extras automáticamente al activar; las imágenes se hacen en CanvasStudio porque FLUX es malo con texto. Librería de **24 CTAs brand-aware** en 4 categorías (venta/conversación/cierre editorial/crecimiento), con auto-inyección al caption del post cuando el CTA se aplica al último slide. Librería de **16 ángulos persuasivos modernos** en 4 grupos (AIDA/PAS/BAB/FAB/4Ps · contrarian/cost-reveal/mistakes/myth-buster/step-framework/comparison · operator/antimarketing/authority · specificity/identity-callout) que se inyectan en los 3 prompts de IA del planner. Política **hashtags = 0** dura en wizard y series. Bugfixes: layout grilla (conflicto `series-grid-container` vs `sc-series-grid`), `<option>` ilegible en tema oscuro. Ver "Sesión 4" en [HANDOFF-GRID-PLANNER.md](HANDOFF-GRID-PLANNER.md) para detalle completo.
@@ -56,9 +53,9 @@ Wizard de 5 pasos por marca, dentro de [src/App.jsx](src/App.jsx):
 | `04_pages/` | Landing pages, copy web, HTML |
 | `05_outputs/` | Entregables finales (PDFs, imágenes, copy aprobado) |
 | `06_assets/` | Imágenes, logos, media bruta |
-| `07_agents/` | (Vacío — placeholder histórico; los agentes activos viven en `.claude/agents/`) |
+| `07_agents/` | (Vacío — placeholder histórico; los agentes activos viven en `.Codex/agents/`) |
 | `08_skills/` | Skills locales del proyecto: `branded-deck/`, `social-creative-designer/` |
-| `.claude/agents/` | Definiciones operativas de los 4 agentes especializados |
+| `.Codex/agents/` | Definiciones operativas de los 4 agentes especializados |
 
 ---
 
@@ -130,7 +127,7 @@ Wizard de 5 pasos por marca, dentro de [src/App.jsx](src/App.jsx):
 
 **Usá la app (wizard) cuando:** querés producir una pieza de Instagram para una marca, lista para publicar (post / carrusel / story / reel cover), con copy + visual.
 
-**Delegá a un agente de `.claude/agents/` cuando** la tarea está fuera del scope del wizard:
+**Delegá a un agente de `.Codex/agents/` cuando** la tarea está fuera del scope del wizard:
 
 | Agente | Delegar cuando... |
 |---|---|

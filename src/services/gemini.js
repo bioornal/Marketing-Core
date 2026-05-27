@@ -32,8 +32,14 @@ export async function generateTextWithGemini(prompt, geminiKey, responseMimeType
   }
 }
 
-export async function generateImageWithGemini(imagePrompt, geminiKey) {
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent?key=${geminiKey}`, {
+const GEMINI_IMAGE_MODELS = {
+  nano_banana_2: 'gemini-3.1-flash-image-preview',
+  nano_banana_2_pro: 'gemini-3-pro-image-preview'
+};
+
+export async function generateImageWithGemini(imagePrompt, geminiKey, options = {}) {
+  const modelId = GEMINI_IMAGE_MODELS[options.model] || GEMINI_IMAGE_MODELS.nano_banana_2_pro;
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${geminiKey}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -97,4 +103,3 @@ export async function analyzeImageWithGemini(base64Data, geminiKey, promptText) 
     throw new Error("Respuesta de análisis de imagen malformada o vacía.");
   }
 }
-

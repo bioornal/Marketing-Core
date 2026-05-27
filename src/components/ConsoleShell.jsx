@@ -17,7 +17,7 @@ import React, { useState } from 'react';
  *
  * Globales (compartidos siempre):
  *   - brand selector, edit-brand button, settings button (en top rail)
- *   - tabs POST | SERIES
+ *   - tabs POST | SERIES | ADS
  */
 export default function ConsoleShell({
   // brand + tabs
@@ -89,6 +89,15 @@ export default function ConsoleShell({
                   onClick={() => activeTab !== 'series' && setActiveTab('series')}
                 >
                   SERIES
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-pressed={activeTab === 'ads'}
+                  className="cs-tabs__btn"
+                  onClick={() => activeTab !== 'ads' && setActiveTab('ads')}
+                >
+                  ADS
                 </button>
               </div>
             </>

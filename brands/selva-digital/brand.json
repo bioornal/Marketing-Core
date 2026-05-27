@@ -2,7 +2,7 @@
   "id": "selva-digital",
   "name": "Selva Digital",
   "slogan": "Tu web vendiendo 24/7. Sin cuotas, sin agencia.",
-  "website": "selvadigital.com",
+  "website": "selva-digital.vercel.app",
   "theme": {
     "accent": "#2BB673",
     "accentText": "#06140C",
@@ -43,8 +43,8 @@
   ],
   "paymentTerms": "40% seña · 30% al aprobar diseño · 30% al ver el sitio funcionando. Primer año: dominio + hosting incluido. Sin cuotas mensuales.",
   "seriesDefaults": {
-    "handle": "selva.digital",
-    "footer": "selva.digital",
+    "handle": "selva-digital.vercel.app",
+    "footer": "selva-digital.vercel.app",
     "reelCta": "Pedime presupuesto → Link en bio.",
     "industryFocus": "el mundo de las páginas web, los chatbots inteligentes, las apps a medida (web y Android) y los e-commerce en Argentina, aplicado a la vida real de PyMEs y comerciantes",
     "kickers": {
