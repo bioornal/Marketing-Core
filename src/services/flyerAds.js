@@ -538,19 +538,21 @@ export async function composeFlyer({
     drawCover(ctx, img, spec.width, spec.height);
   }
 
-  const gradient = ctx.createLinearGradient(0, 0, spec.width, spec.height);
-  gradient.addColorStop(0, 'rgba(0,0,0,0.18)');
-  gradient.addColorStop(layout === 'split' ? 0.46 : 0.28, 'rgba(0,0,0,0.58)');
-  gradient.addColorStop(1, 'rgba(0,0,0,0.92)');
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, spec.width, spec.height);
-
-  // Pintar formas flotantes neón en el fondo para ambientación de marketing premium
-  drawBackgroundShapes(ctx, spec.width, spec.height, accent);
-
+  // Si el overlay de texto está desactivado, devolvemos la imagen completamente limpia, nítida y vibrante
   if (!showTextOverlay) {
     return canvas.toDataURL('image/png');
   }
+
+  // Degradado sutil localizado en la mitad inferior para no opacar los renders 3D premium ni los neones
+  const gradient = ctx.createLinearGradient(0, spec.height * 0.45, 0, spec.height);
+  gradient.addColorStop(0, 'rgba(0,0,0,0)');
+  gradient.addColorStop(0.5, 'rgba(0,0,0,0.22)');
+  gradient.addColorStop(1, 'rgba(0,0,0,0.72)');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, spec.height * 0.45, spec.width, spec.height * 0.55);
+
+  // Pintar formas flotantes neón en el fondo para ambientación de marketing premium
+  drawBackgroundShapes(ctx, spec.width, spec.height, accent);
 
   const pad = format === 'story' ? 92 : 76;
   const maxWidth = spec.width - pad * 2;
