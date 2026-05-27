@@ -406,7 +406,7 @@ export default function App() {
   // Config & API Keys State
   const [geminiKey, setGeminiKey] = useLocalStorage("gemini_api_key", import.meta.env.VITE_GEMINI_API_KEY || "");
   const [openaiKey, setOpenaiKey] = useLocalStorage("openai_api_key", import.meta.env.VITE_OPENAI_API_KEY || "");
-  const [falaiKey, setFalaiKey] = useLocalStorage("falai_api_key", "");
+  const [falaiKey, setFalaiKey] = useLocalStorage("falai_api_key", import.meta.env.VITE_FALAI_API_KEY || "");
   const [preferredProvider, setPreferredProvider] = useLocalStorage("preferred_ai_provider", "openai");
 
   // Tab & Series states
