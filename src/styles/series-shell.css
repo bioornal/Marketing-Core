@@ -1,0 +1,80 @@
+/* =========================================================
+   Series Tab — layout específico dentro del Console Shell
+   Scaffold. Se llena en Fase 6.
+   ========================================================= */
+
+/* Steps rail: "Mis Series" navigator */
+.sc-series-nav {
+  display: flex;
+  flex-direction: column;
+  padding: var(--s-3) 0;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.sc-series-nav__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--s-4) var(--s-2);
+}
+
+.sc-series-nav__list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Work canvas: sections stack */
+.sc-series-work {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+/* Grid container: 3x3 layout */
+.sc-series-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+/* Anchor strip: horizontal preview + actions */
+.sc-anchor-strip {
+  display: grid;
+  grid-template-columns: 120px 1fr auto;
+  gap: var(--s-4);
+  align-items: center;
+}
+.sc-anchor-strip__thumb {
+  width: 120px;
+  aspect-ratio: 4 / 5;
+  border-radius: var(--r-md);
+  background: var(--ink-1);
+  border: 1px solid var(--line);
+  background-size: cover;
+  background-position: center;
+}
+.sc-anchor-strip__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  min-width: 0;
+}
+
+/* Export bar: inline footer del work canvas */
+.sc-export-bar {
+  display: flex;
+  gap: var(--s-2);
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  padding: var(--s-3) var(--s-4);
+  margin-top: var(--s-3);
+  background: var(--ink-1);
+  border: 1px solid var(--line);
+  border-top: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+}

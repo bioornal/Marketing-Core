@@ -1,0 +1,515 @@
+/* =========================================================
+   Social Core — Console Shell (v2)
+   Studio Console layout: top rail / steps rail / work / preview / status bar
+   ========================================================= */
+
+.console-shell {
+  display: grid;
+  grid-template-columns: var(--rail-steps) minmax(0, 1fr) var(--rail-preview);
+  grid-template-rows: var(--rail-top) minmax(0, 1fr) var(--rail-status);
+  grid-template-areas:
+    "top    top    top"
+    "steps  work   preview"
+    "status status status";
+  height: 100vh;
+  background: var(--ink-0);
+  color: var(--ink-8);
+  font-family: var(--font-display);
+}
+
+/* ----- TOP RAIL ----- */
+.cs-top {
+  grid-area: top;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding: 0 var(--s-4);
+  background: var(--ink-1);
+  border-bottom: 1px solid var(--line);
+}
+
+.cs-top__left,
+.cs-top__right {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-width: 0;
+}
+
+.cs-brand {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-2);
+  cursor: pointer;
+  user-select: none;
+}
+.cs-brand__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--accent);
+  display: inline-block;
+  align-self: center;
+  box-shadow: 0 0 0 3px var(--accent-fade);
+}
+.cs-brand__name {
+  font-family: var(--font-display);
+  font-size: var(--t-body-13);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink-8);
+}
+.cs-brand__path {
+  font-family: var(--font-mono);
+  font-size: var(--t-mono-11);
+  color: var(--ink-6);
+  letter-spacing: var(--track-mono-tight);
+}
+
+.cs-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--line-strong);
+}
+
+.cs-brand-select {
+  font-family: var(--font-mono);
+  font-size: var(--t-mono-11);
+  letter-spacing: var(--track-mono-tight);
+  text-transform: uppercase;
+  color: var(--ink-7);
+  background: var(--ink-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  height: 28px;
+  padding: 0 var(--s-2);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--ink-6) 50%),
+                    linear-gradient(135deg, var(--ink-6) 50%, transparent 50%);
+  background-position: calc(100% - 14px) 50%, calc(100% - 10px) 50%;
+  background-size: 4px 4px;
+  background-repeat: no-repeat;
+  padding-right: 24px;
+}
+.cs-brand-select:hover { color: var(--ink-8); border-color: var(--ink-4); }
+.cs-brand-select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ----- STEPS RAIL ----- */
+.cs-steps {
+  grid-area: steps;
+  display: flex;
+  flex-direction: column;
+  background: var(--ink-1);
+  border-right: 1px solid var(--line);
+  overflow-y: auto;
+  padding: var(--s-4) 0;
+}
+
+.cs-rail-label {
+  font-family: var(--font-mono);
+  font-size: var(--t-mono-10);
+  letter-spacing: var(--track-mono);
+  text-transform: uppercase;
+  color: var(--ink-5);
+  padding: 0 var(--s-4);
+  margin-bottom: var(--s-2);
+}
+
+.cs-stepper {
+  display: flex;
+  flex-direction: column;
+}
+
+.cs-step {
+  display: grid;
+  grid-template-columns: 14px auto 1fr;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  background: transparent;
+  border: 0;
+  border-left: 2px solid transparent;
+  cursor: pointer;
+  text-align: left;
+  color: var(--ink-7);
+  transition: background var(--dur-1) var(--easing), color var(--dur-1) var(--easing), border-color var(--dur-1) var(--easing);
+}
+.cs-step:hover {
+  background: var(--ink-2);
+  color: var(--ink-8);
+}
+.cs-step--active {
+  background: var(--ink-2);
+  border-left-color: var(--accent);
+  color: var(--ink-9);
+}
+.cs-step--done { color: var(--ink-7); }
+.cs-step--pending { color: var(--ink-6); }
+
+.cs-step__mark {
+  font-family: var(--font-mono);
+  font-size: var(--t-mono-12);
+  color: var(--ink-5);
+  line-height: 1;
+  width: 14px;
+  text-align: center;
+}
+.cs-step--active .cs-step__mark { color: var(--accent); }
+.cs-step--done .cs-step__mark { color: var(--ok); }
+
+.cs-step__num {
+  font-family: var(--font-mono);
+  font-size: var(--t-mono-11);
+  letter-spacing: var(--track-mono);
+  color: var(--ink-5);
+}
+.cs-step--active .cs-step__num { color: var(--ink-8); }
+
+.cs-step__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.cs-step__title {
+  font-family: var(--font-display);
+  font-size: var(--t-body-13);
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: inherit;
+}
+.cs-step__meta {
+  font-family: var(--font-mono);
+  font-size: var(--t-mono-10);
+  letter-spacing: var(--track-mono-tight);
+  color: var(--ink-6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* ----- Brand recap block ----- */
+.cs-recap {
+  margin-top: var(--s-6);
+  padding: var(--s-3) var(--s-4);
+  border-top: 1px solid var(--line);
+}
+
+.cs-recap__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-2) 0;
+  font-family: var(--font-mono);
+  font-size: var(--t-mono-11);
+  letter-spacing: var(--track-mono-tight);
+}
+.cs-recap__k { color: var(--ink-6); text-transform: uppercase; font-size: var(--t-mono-10); letter-spacing: var(--track-mono); }
+.cs-recap__v { color: var(--ink-8); display: inline-flex; align-items: center; gap: var(--s-2); min-width: 0; }
+.cs-recap__v span:not(.cs-swatch) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 120px;
+}
+.cs-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  border: 1px solid var(--line-strong);
+}
+.cs-recap__slogan {
+  margin-top: var(--s-2);
+  font-family: var(--font-display);
+  font-size: var(--t-body-13);
+  color: var(--ink-6);
+  font-style: italic;
+  line-height: 1.45;
+}
+
+/* ----- WORK CANVAS ----- */
+.cs-work {
+  grid-area: work;
+  overflow-y: auto;
+  background: var(--ink-0);
+  padding: var(--s-6);
+}
+.cs-work__inner {
+  max-width: 880px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+}
+
+/* ----- Inline alert (replaces global wiz-alert) ----- */
+.cs-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-md);
+  border: 1px solid var(--line-strong);
+  background: var(--ink-1);
+  font-family: var(--font-display);
+  font-size: var(--t-body-13);
+  color: var(--ink-7);
+}
+.cs-alert--error   { border-color: color-mix(in srgb, var(--danger) 50%, transparent); color: var(--ink-8); }
+.cs-alert--warning { border-color: color-mix(in srgb, var(--warn) 50%, transparent); color: var(--ink-8); }
+.cs-alert--success { border-color: color-mix(in srgb, var(--ok) 50%, transparent); color: var(--ink-8); }
+.cs-alert__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+.cs-alert--error .cs-alert__dot   { background: var(--danger); }
+.cs-alert--warning .cs-alert__dot { background: var(--warn); }
+.cs-alert--success .cs-alert__dot { background: var(--ok); }
+
+/* ----- PREVIEW RAIL ----- */
+.cs-preview {
+  grid-area: preview;
+  display: flex;
+  flex-direction: column;
+  background: var(--ink-1);
+  border-left: 1px solid var(--line);
+  overflow-y: auto;
+}
+
+.cs-preview__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--line);
+}
+.cs-preview__label {
+  font-family: var(--font-mono);
+  font-size: var(--t-mono-10);
+  letter-spacing: var(--track-mono);
+  text-transform: uppercase;
+  color: var(--ink-6);
+}
+.cs-preview__pill {
+  font-family: var(--font-mono);
+  font-size: var(--t-mono-10);
+  letter-spacing: var(--track-mono);
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-fade);
+  padding: 2px 6px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line-accent);
+}
+
+.cs-preview__stage {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s-4);
+}
+
+.cs-preview__meta {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--s-2) var(--s-4);
+  padding: var(--s-3) var(--s-4);
+  border-top: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: var(--t-mono-10);
+  letter-spacing: var(--track-mono-tight);
+}
+.cs-preview__meta-k { color: var(--ink-6); text-transform: uppercase; letter-spacing: var(--track-mono); }
+.cs-preview__meta-v { color: var(--ink-8); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ----- STATUS BAR ----- */
+.cs-status {
+  grid-area: status;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding: 0 var(--s-3);
+  background: var(--ink-1);
+  border-top: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: var(--t-mono-10);
+  letter-spacing: var(--track-mono);
+  color: var(--ink-6);
+  text-transform: uppercase;
+}
+
+.cs-status__group {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.cs-status__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  padding: 0 var(--s-2);
+  height: 18px;
+  border-radius: var(--r-sm);
+  background: var(--ink-2);
+  color: var(--ink-7);
+}
+.cs-status__chip--accent { color: var(--accent); background: var(--accent-fade); }
+.cs-status__chip--ok     { color: var(--ok); }
+.cs-status__chip--warn   { color: var(--warn); }
+
+.cs-status__sep { color: var(--ink-5); }
+
+.cs-status__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+}
+.cs-status__navbtn {
+  font-family: var(--font-mono);
+  font-size: var(--t-mono-10);
+  letter-spacing: var(--track-mono);
+  text-transform: uppercase;
+  color: var(--ink-7);
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  height: 22px;
+  padding: 0 var(--s-2);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  transition: background var(--dur-1) var(--easing), color var(--dur-1) var(--easing), border-color var(--dur-1) var(--easing);
+}
+.cs-status__navbtn:hover:not(:disabled) {
+  background: var(--ink-2);
+  color: var(--ink-8);
+  border-color: var(--ink-4);
+}
+.cs-status__navbtn--primary {
+  background: var(--accent);
+  color: var(--accent-text, #06140C);
+  border-color: var(--accent);
+}
+.cs-status__navbtn--primary:hover:not(:disabled) { filter: brightness(1.08); }
+.cs-status__navbtn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* ----- Tab switcher (Post/Series) ----- */
+.cs-tabs {
+  display: inline-flex;
+  background: var(--ink-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  padding: 2px;
+  gap: 2px;
+}
+.cs-tabs__btn {
+  font-family: var(--font-mono);
+  font-size: var(--t-mono-10);
+  letter-spacing: var(--track-mono);
+  text-transform: uppercase;
+  color: var(--ink-6);
+  background: transparent;
+  border: 0;
+  border-radius: 3px;
+  height: 22px;
+  padding: 0 var(--s-2);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+}
+.cs-tabs__btn:hover { color: var(--ink-8); }
+.cs-tabs__btn[aria-pressed="true"] {
+  background: var(--ink-0);
+  color: var(--ink-9);
+  box-shadow: inset 0 0 0 1px var(--line-accent);
+}
+
+/* ----- Icon button (top rail) ----- */
+.cs-icon-btn {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line-strong);
+  background: var(--ink-2);
+  color: var(--ink-7);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: background var(--dur-1) var(--easing), color var(--dur-1) var(--easing), border-color var(--dur-1) var(--easing);
+}
+.cs-icon-btn:hover { background: var(--ink-3); color: var(--ink-8); border-color: var(--ink-4); }
+.cs-icon-btn i { font-size: 14px; }
+
+.cs-text-btn {
+  font-family: var(--font-mono);
+  font-size: var(--t-mono-11);
+  letter-spacing: var(--track-mono-tight);
+  text-transform: uppercase;
+  color: var(--ink-7);
+  background: var(--ink-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  height: 28px;
+  padding: 0 var(--s-3);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  transition: background var(--dur-1) var(--easing), color var(--dur-1) var(--easing), border-color var(--dur-1) var(--easing);
+}
+.cs-text-btn:hover { background: var(--ink-3); color: var(--ink-8); border-color: var(--ink-4); }
+.cs-text-btn i { font-size: 12px; }
+
+/* ----- Scrollbar polish (scoped to console) ----- */
+.console-shell *::-webkit-scrollbar { width: 8px; height: 8px; }
+.console-shell *::-webkit-scrollbar-track { background: transparent; }
+.console-shell *::-webkit-scrollbar-thumb { background: var(--ink-3); border-radius: 4px; border: 2px solid var(--ink-1); }
+.console-shell *::-webkit-scrollbar-thumb:hover { background: var(--ink-4); }
+
+/* ----- Tablet fallback (1024-1279) — collapse preview into overlay ----- */
+@media (max-width: 1279px) {
+  .console-shell {
+    grid-template-columns: var(--rail-steps) minmax(0, 1fr);
+    grid-template-areas:
+      "top    top"
+      "steps  work"
+      "status status";
+  }
+  .cs-preview {
+    position: fixed;
+    top: var(--rail-top);
+    right: 0;
+    bottom: var(--rail-status);
+    width: var(--rail-preview);
+    z-index: 30;
+    transform: translateX(100%);
+    transition: transform var(--dur-3) var(--easing);
+    box-shadow: var(--shadow-overlay);
+  }
+  .cs-preview--open { transform: translateX(0); }
+}
+
+@media (max-width: 1023px) {
+  .console-shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "top"
+      "work"
+      "status";
+  }
+  .cs-steps { display: none; }
+}

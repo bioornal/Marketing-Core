@@ -1,0 +1,3 @@
+- [Christian Speziali — Perfil de usuario](user_christian_profile.md) — Fundador Selva Digital, freelance dev, Córdoba AR, audiencia PyMEs argentinas
+- [Carrusel WhatsApp "cuesta plata"](project_carousel_whatsapp.md) — Primer carrusel generado, 5 slides, formato 4:5, motor imagegen, archivos en 06_assets/social/
+- [Usar imagegen en lugar de nano-banana](feedback_imagegen_default.md) — nano-banana falla con 404; ir directo a gpt-image-1 sin reintentar

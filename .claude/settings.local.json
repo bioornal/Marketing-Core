@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\spezi\\\\.claude\\\\skills\" -Force -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName })",
+      "Read(//c/Users/spezi/.claude/**)",
+      "Read(//c/Users/spezi/Desktop/Marketing-Project\" 2>/dev/**)",
+      "PowerShell(\\(Test-Path \"C:\\\\Users\\\\spezi\\\\.claude\\\\skills\\\\branded-deck\" -PathType Container\\); Write-Host \"branded-deck exists\")",
+      "Bash(xargs grep *)",
+      "Read(//c/Users/spezi/.agents/skills/**)",
+      "Read(//c/Users/spezi/**)",
+      "mcp__nano-banana__get_configuration_status",
+      "mcp__nano-banana__generate_image",
+      "mcp__imagegen__text-to-image",
+      "Bash(npx nano-banana-mcp *)",
+      "Bash(npm show *)",
+      "Bash(npm pack *)",
+      "Bash(tar -xzf nano-banana-mcp-1.0.3.tgz -C /tmp/)",
+      "Read(//tmp/package/dist/**)",
+      "Bash(del \"C:\\\\Users\\\\spezi\\\\.claude\\\\projects\\\\c--Users-spezi\\\\memory\\\\feedback_pnpm_over_npm.md\")",
+      "Bash(pnpm dev *)",
+      "Bash(curl -s http://localhost:5174/ -o /dev/null -w \"%{http_code}\\\\n\")",
+      "Bash(pnpm build *)",
+      "Bash(pkill -f \"vite\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5174/)",
+      "Bash(pkill -f vite)"
+    ],
+    "additionalDirectories": [
+      "\\dev",
+      "C:\\Users\\spezi\\.claude\\skills",
+      "C:\\Users\\spezi\\AppData\\Roaming\\npm\\node_modules\\nano-banana-mcp\\dist"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "nano-banana",
+    "imagegen"
+  ]
+}

@@ -1,0 +1,84 @@
+/* =========================================================
+   Social Core — Design Tokens (v2 · Studio Console)
+   Aesthetic: Workstation industrial mono · grayscale + 1 accent
+   Phase 1 — Lives alongside legacy tokens. Do not remove old ones yet.
+   ========================================================= */
+
+:root {
+  /* ----- Grayscale ink scale ----- */
+  --ink-0: #0A0B0D;   /* canvas (deepest) */
+  --ink-1: #101216;   /* surface */
+  --ink-2: #161A21;   /* surface raised */
+  --ink-3: #1D222B;   /* surface hover / pressed */
+  --ink-4: #2A3140;   /* border strong */
+  --ink-5: #3B4456;   /* text faint / dividers */
+  --ink-6: #6A7385;   /* text muted */
+  --ink-7: #B8BFCE;   /* text secondary */
+  --ink-8: #E8ECF2;   /* text primary */
+  --ink-9: #FFFFFF;   /* text emphasis */
+
+  /* ----- Hairlines ----- */
+  --line:        rgba(255, 255, 255, 0.06);
+  --line-strong: rgba(255, 255, 255, 0.12);
+  --line-accent: color-mix(in srgb, var(--accent, #2BB673) 40%, transparent);
+
+  /* ----- Accent (inherits dynamic --accent from brand.json) ----- */
+  --accent-soft: color-mix(in srgb, var(--accent, #2BB673) 14%, transparent);
+  --accent-fade: color-mix(in srgb, var(--accent, #2BB673) 6%, transparent);
+
+  /* ----- Semantic ----- */
+  --danger: #FF5C5C;
+  --warn:   #F5B74A;
+  --ok:     #3CC97A;
+
+  /* ----- Typography ----- */
+  --font-display: 'Geist', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono:    'Geist Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* ----- Type scale (px, 8pt rhythm) ----- */
+  --t-mono-10: 10px;
+  --t-mono-11: 11px;
+  --t-mono-12: 12px;
+  --t-body-13: 13px;
+  --t-body-14: 14px;
+  --t-body-16: 16px;
+  --t-h3-18:   18px;
+  --t-h2-22:   22px;
+  --t-h1-28:   28px;
+
+  /* Tracking for mono labels */
+  --track-mono: 0.06em;
+  --track-mono-tight: 0.04em;
+
+  /* ----- Spacing (4px multiples) ----- */
+  --s-1:  4px;
+  --s-2:  8px;
+  --s-3:  12px;
+  --s-4:  16px;
+  --s-5:  20px;
+  --s-6:  24px;
+  --s-8:  32px;
+  --s-10: 40px;
+  --s-12: 48px;
+
+  /* ----- Radii ----- */
+  --r-sm: 4px;
+  --r-md: 6px;
+  --r-lg: 10px;
+
+  /* ----- Motion ----- */
+  --easing: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-1: 120ms;
+  --dur-2: 200ms;
+  --dur-3: 320ms;
+
+  /* ----- Elevation (reserved for overlays only) ----- */
+  --shadow-overlay: 0 24px 64px -16px rgba(0, 0, 0, 0.6), 0 8px 16px -4px rgba(0, 0, 0, 0.4);
+  --shadow-popover: 0 12px 32px -8px rgba(0, 0, 0, 0.5);
+
+  /* ----- Layout shell metrics (Console Layout) ----- */
+  --rail-top: 48px;
+  --rail-status: 28px;
+  --rail-steps: 220px;
+  --rail-preview: 440px;
+}

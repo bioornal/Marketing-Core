@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "nano-banana": {
+      "command": "node",
+      "args": [
+        "C:\\Users\\spezi\\AppData\\Roaming\\npm\\node_modules\\nano-banana-mcp\\dist\\index.js"
+      ],
+      "env": {
+        "GEMINI_API_KEY": ""
+      }
+    },
+    "imagegen": {
+      "command": "npx",
+      "args": [
+        "imagegen-mcp"
+      ],
+      "env": {
+        "OPENAI_API_KEY": ""
+      }
+    }
+  }
+}

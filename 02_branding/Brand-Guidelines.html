@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Selva Digital — Brand Guidelines</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: #FAFAFA;
+    color: #1C1C1F;
+    line-height: 1.6;
+  }
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 40px; }
+  
+  /* Print styles */
+  @media print {
+    body { background: white; }
+    .no-print { display: none !important; }
+    section { page-break-inside: avoid; break-inside: avoid; }
+  }
+
+  /* Header */
+  header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+    background: rgba(250,250,250,0.95); backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(28,28,31,0.08);
+    padding: 16px 40px;
+  }
+  header .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo-header {
+    font-family: 'Geist', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #0A0B0D;
+    letter-spacing: -0.02em;
+  }
+  nav {
+    display: flex;
+    gap: 32px;
+    align-items: center;
+  }
+  nav a {
+    font-size: 14px;
+    color: rgba(28,28,31,0.7);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  nav a:hover { color: #0A0B0D; }
+  .btn-print {
+    padding: 9px 16px;
+    background: #0A0B0D;
+    color: #FAFAFA;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* Main */
+  main { padding-top: 80px; }
+  
+  section {
+    padding: 80px 0;
+    border-bottom: 1px solid rgba(28,28,31,0.06);
+  }
+  
+  section:last-of-type { border-bottom: none; }
+
+  h1 {
+    font-family: 'Geist', sans-serif;
+    font-size: 56px;
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 24px;
+    letter-spacing: -0.035em;
+  }
+
+  h2 {
+    font-family: 'Geist', sans-serif;
+    font-size: 42px;
+    font-weight: 700;
+    margin-bottom: 32px;
+    letter-spacing: -0.03em;
+  }
+
+  h3 {
+    font-family: 'Geist', sans-serif;
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    letter-spacing: -0.01em;
+  }
+
+  p { margin-bottom: 16px; font-size: 16px; line-height: 1.65; color: rgba(28,28,31,0.78); }
+  
+  .subtitle {
+    font-size: 18px;
+    color: rgba(28,28,31,0.65);
+    margin-bottom: 24px;
+    max-width: 680px;
+  }
+
+  /* Grid */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+
+  /* Color swatches */
+  .swatch {
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .swatch-color {
+    width: 100%;
+    height: 140px;
+    border-radius: 8px;
+    border: 1px solid rgba(28,28,31,0.08);
+  }
+  .swatch-label {
+    font-family: 'Geist', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .swatch-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: rgba(28,28,31,0.5);
+    letter-spacing: 0.5px;
+  }
+
+  /* Logo showcase */
+  .logo-showcase {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 48px;
+  }
+  .logo-item {
+    padding: 40px;
+    background: #FAFAFA;
+    border: 1px solid rgba(28,28,31,0.08);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+  }
+  .logo-item img {
+    max-width: 100%;
+    max-height: 160px;
+  }
+  .logo-item.dark {
+    background: #0A0B0D;
+  }
+
+  /* Typography showcase */
+  .typo-example {
+    padding: 24px;
+    background: #FAFAFA;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(28,28,31,0.08);
+  }
+  .typo-example h4 {
+    font-family: 'Geist', sans-serif;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: rgba(28,28,31,0.5);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+  .typo-example p { margin: 0; }
+
+  /* Component showcase */
+  .component-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+  .component-box {
+    padding: 32px;
+    background: #FAFAFA;
+    border: 1px solid rgba(28,28,31,0.08);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-primary {
+    background: #2BB673;
+    color: #06140C;
+  }
+  .btn-primary:hover {
+    background: #22a45f;
+  }
+  .btn-ghost {
+    background: #FAFAFA;
+    color: #0A0B0D;
+    border: 1px solid rgba(28,28,31,0.12);
+  }
+  .btn-ghost:hover {
+    background: #F5F5F5;
+    border-color: rgba(28,28,31,0.2);
+  }
+
+  /* Cards */
+  .card {
+    padding: 28px;
+    background: #FAFAFA;
+    border: 1px solid rgba(28,28,31,0.08);
+    border-radius: 12px;
+  }
+
+  /* Spacing reference */
+  .spacing-ref {
+    display: flex;
+    gap: 0;
+    align-items: flex-end;
+  }
+  .spacing-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .spacing-visual {
+    background: #0A0B0D;
+    border-radius: 4px;
+  }
+  .spacing-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: rgba(28,28,31,0.5);
+    text-align: center;
+  }
+
+  /* Code block */
+  pre {
+    background: #0A0B0D;
+    color: #2BB673;
+    padding: 20px;
+    border-radius: 10px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 20px 0;
+  }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: rgba(28,28,31,0.08);
+    margin: 48px 0;
+  }
+
+  /* Hero section */
+  .hero {
+    padding: 120px 0;
+    background: linear-gradient(135deg, #0A0B0D 0%, #121316 100%);
+    color: #FAFAFA;
+    border-radius: 20px;
+    padding: 80px;
+    text-align: center;
+  }
+  .hero h1 { color: #FAFAFA; margin-bottom: 20px; }
+  .hero p { color: rgba(250,250,250,0.72); max-width: 620px; margin: 0 auto 36px; }
+
+  /* Footer */
+  footer {
+    padding: 40px 0;
+    border-top: 1px solid rgba(28,28,31,0.06);
+    text-align: center;
+    color: rgba(28,28,31,0.5);
+    font-size: 13px;
+  }
+
+  /* Print break */
+  @media print {
+    header { position: static; }
+    main { padding-top: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header class="no-print">
+  <div class="container">
+    <div class="logo-header">Selva Digital</div>
+    <nav>
+      <a href="#identidad">Identidad</a>
+      <a href="#colores">Colores</a>
+      <a href="#tipografia">Tipografía</a>
+      <a href="#componentes">Componentes</a>
+      <a href="#spacing">Spacing</a>
+      <a href="#uso">Guías de uso</a>
+    </nav>
+    <button class="btn-print no-print" onclick="window.print()">📥 Descargar PDF</button>
+  </div>
+</header>
+
+<main>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <h1>Selva Digital</h1>
+      <p>Brand Guidelines & Design System</p>
+      <p style="font-size: 14px; margin-top: 20px;">Versión 1.0 · Mayo 2026</p>
+    </div>
+  </section>
+
+  <!-- Identidad -->
+  <section id="identidad">
+    <div class="container">
+      <h2>01 — Identidad</h2>
+      <p class="subtitle">Selva Digital es una marca que comunica crecimiento a través de la tecnología. Orgánica, sólida, sin ruido. El logotipo combina una hoja estilizada con la palabra "Selva" en tipografía moderna.</p>
+      
+      <div class="logo-showcase">
+        <div>
+          <h3 style="margin-bottom: 24px;">Logotipo completo</h3>
+          <div class="logo-item">
+            <img src="https://res.cloudinary.com/djtvjkcu6/image/upload/v1778510560/SelvaDigital/logoChico2_kg35ot.png" alt="Selva Digital Logo" />
+          </div>
+          <p style="margin-top: 16px; font-size: 13px; color: rgba(28,28,31,0.6);">Uso recomendado: navbar, footer, documentos oficiales.</p>
+        </div>
+        <div>
+          <h3 style="margin-bottom: 24px;">Variaciones</h3>
+          <div class="logo-item dark">
+            <img src="https://res.cloudinary.com/djtvjkcu6/image/upload/v1778510560/SelvaDigital/logoChico2_kg35ot.png" alt="Selva Digital Logo" style="filter: invert(1);" />
+          </div>
+          <p style="margin-top: 16px; font-size: 13px; color: rgba(28,28,31,0.6);">Logo invertido para fondos oscuros.</p>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <h3>Espacios mínimos (clear space)</h3>
+      <p>Mantén un espacio de al menos 1× la altura del isotipo alrededor del logo. Esto asegura legibilidad y presencia visual.</p>
+      <div style="background: #F5F5F5; padding: 40px; border-radius: 12px; margin-top: 20px; text-align: center;">
+        <p style="font-size: 12px; color: rgba(28,28,31,0.5); margin-bottom: 20px;">Ejemplo de clear space (líneas punteadas = mínimo espacio requerido)</p>
+        <div style="display: inline-block; border: 2px dashed rgba(28,28,31,0.2); padding: 40px; border-radius: 8px;">
+          <img src="https://res.cloudinary.com/djtvjkcu6/image/upload/v1778510560/SelvaDigital/logoChico2_kg35ot.png" alt="Logo" style="height: 60px; width: auto;" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Colores -->
+  <section id="colores">
+    <div class="container">
+      <h2>02 — Paleta de colores</h2>
+      <p class="subtitle">La paleta está pensada para ser limpia y profesional. El verde es el acento principal (conexión con "Selva"), los grises son neutrales para el contenido, y los secundarios son para estados y contextos específicos.</p>
+
+      <h3 style="margin-top: 40px; margin-bottom: 24px;">Colores primarios</h3>
+      <div class="grid-3">
+        <div class="swatch">
+          <div class="swatch-color" style="background: #2BB673;"></div>
+          <div class="swatch-label">Verde Selva</div>
+          <div class="swatch-code">#2BB673 · RGB(43, 182, 115)</div>
+          <p style="font-size: 12px; margin: 0; color: rgba(28,28,31,0.6);">Acento principal. Botones, links, highlights.</p>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: #0A0B0D;"></div>
+          <div class="swatch-label">Negro Profundo</div>
+          <div class="swatch-code">#0A0B0D · RGB(10, 11, 13)</div>
+          <p style="font-size: 12px; margin: 0; color: rgba(28,28,31,0.6);">Background dark mode, headings.</p>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: #FAFAFA;"></div>
+          <div class="swatch-label">Blanco Crudo</div>
+          <div class="swatch-code">#FAFAFA · RGB(250, 250, 250)</div>
+          <p style="font-size: 12px; margin: 0; color: rgba(28,28,31,0.6);">Background light mode, texto claro.</p>
+        </div>
+      </div>
+
+      <h3 style="margin-top: 40px; margin-bottom: 24px;">Escala de grises (neutrales)</h3>
+      <div class="grid-4">
+        <div class="swatch">
+          <div class="swatch-color" style="background: #121316;"></div>
+          <div class="swatch-label">Surface</div>
+          <div class="swatch-code">#121316</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: #1A1C20;"></div>
+          <div class="swatch-label">Surface 2</div>
+          <div class="swatch-code">#1A1C20</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: #1C1C1F;"></div>
+          <div class="swatch-label">Text Primary</div>
+          <div class="swatch-code">#1C1C1F</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: rgba(28,28,31,0.7); border: 1px solid rgba(28,28,31,0.2);"></div>
+          <div class="swatch-label">Text Soft</div>
+          <div class="swatch-code">rgba(28,28,31,0.7)</div>
+        </div>
+      </div>
+
+      <h3 style="margin-top: 40px; margin-bottom: 24px;">Estados y contextos</h3>
+      <div class="grid-3">
+        <div class="swatch">
+          <div class="swatch-color" style="background: #5EE6B7;"></div>
+          <div class="swatch-label">Verde claro (hover)</div>
+          <div class="swatch-code">#5EE6B7</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: #FF6B6B;"></div>
+          <div class="swatch-label">Rojo (error)</div>
+          <div class="swatch-code">#FF6B6B</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: #FFB547;"></div>
+          <div class="swatch-label">Ámbar (advertencia)</div>
+          <div class="swatch-code">#FFB547</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tipografía -->
+  <section id="tipografia">
+    <div class="container">
+      <h2>03 — Tipografía</h2>
+      <p class="subtitle">Tres familias tipográficas base. Cada una tiene un propósito claro en la jerarquía visual.</p>
+
+      <h3 style="margin-bottom: 24px;">Familias tipográficas</h3>
+      
+      <div class="typo-example">
+        <h4>Geist — Sans-serif (headings & display)</h4>
+        <p style="font-family: 'Geist', sans-serif; font-size: 48px; font-weight: 700; margin: 0; letter-spacing: -0.035em;">Geist Bold</p>
+        <p style="margin-top: 12px; font-size: 14px; color: rgba(28,28,31,0.6);">Utiliza para H1, H2, H3, logos, textos grandes. Pesos: 300–700.</p>
+      </div>
+
+      <div class="typo-example">
+        <h4>Inter — Sans-serif (body & UI)</h4>
+        <p style="font-family: 'Inter', system-ui, sans-serif; font-size: 16px; margin: 0; line-height: 1.65;">Inter Regular. El párrafo que estás leyendo ahora está en Inter. Se usa para cuerpo de texto, descripciones, labels y todo lo que no sea un heading.</p>
+        <p style="margin-top: 12px; font-size: 14px; color: rgba(28,28,31,0.6);">Pesos recomendados: 400 (regular), 500 (medium), 600 (semibold).</p>
+      </div>
+
+      <div class="typo-example">
+        <h4>JetBrains Mono — Monospace (código & data)</h4>
+        <p style="font-family: 'JetBrains Mono', monospace; font-size: 13px; margin: 0; letter-spacing: 0.5px;">#2BB673 · DISPONIBLE PARA NUEVOS PROYECTOS</p>
+        <p style="margin-top: 12px; font-size: 14px; color: rgba(28,28,31,0.6);">Para tags, etiquetas técnicas, timestamps, precios. Letra pequeña pero visible.</p>
+      </div>
+
+      <div class="divider"></div>
+
+      <h3>Escala tipográfica</h3>
+      <div style="display: grid; gap: 16px;">
+        <div class="typo-example">
+          <h4>H1 — 56px / Geist Bold / Line-height 1.1</h4>
+          <h1 style="font-size: 56px; margin: 0;">Tecnología que hace crecer tu negocio.</h1>
+        </div>
+        <div class="typo-example">
+          <h4>H2 — 42px / Geist Bold / Line-height 1.15</h4>
+          <h2 style="font-size: 42px; margin: 0;">Servicios web & sistemas</h2>
+        </div>
+        <div class="typo-example">
+          <h4>H3 — 24px / Geist Semibold / Line-height 1.3</h4>
+          <h3 style="font-size: 24px; margin: 0;">Planificación clara</h3>
+        </div>
+        <div class="typo-example">
+          <h4>Body — 16px / Inter Regular / Line-height 1.65</h4>
+          <p style="font-size: 16px; margin: 0;">El párrafo base para contenido largo. Debe ser legible en desktop (16px+) y mobile (14-15px).</p>
+        </div>
+        <div class="typo-example">
+          <h4>Small — 13px / Inter Regular / Color: text-dim</h4>
+          <p style="font-size: 13px; margin: 0; color: rgba(28,28,31,0.6);">Para notas, subtextos, metadata. Nunca más pequeño que 12px en web.</p>
+        </div>
+      </div>
+
+      <h3 style="margin-top: 40px; margin-bottom: 24px;">Uso de pesos</h3>
+      <ul style="margin: 0; padding-left: 20px;">
+        <li><strong>700 (Bold):</strong> Headings, CTA, énfasis visual</li>
+        <li><strong>600 (Semibold):</strong> Subheadings, labels importantes</li>
+        <li><strong>500 (Medium):</strong> Botones, acciones</li>
+        <li><strong>400 (Regular):</strong> Cuerpo, descripciones</li>
+        <li><strong>300 (Light):</strong> Subtítulos, notas (uso limitado)</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Componentes -->
+  <section id="componentes">
+    <div class="container">
+      <h2>04 — Componentes</h2>
+      <p class="subtitle">Los componentes base del sistema. Úsalos como referencia para mantener consistencia visual.</p>
+
+      <h3 style="margin-bottom: 32px;">Botones</h3>
+      <div class="component-grid">
+        <div class="component-box">
+          <h4 style="font-size: 12px; color: rgba(28,28,31,0.5); text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 16px;">Primary</h4>
+          <button class="btn btn-primary">Pedir presupuesto →</button>
+          <p style="font-size: 12px; color: rgba(28,28,31,0.6); margin: 0;">Acción principal. Verde #2BB673, texto dark.</p>
+        </div>
+        <div class="component-box">
+          <h4 style="font-size: 12px; color: rgba(28,28,31,0.5); text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 16px;">Ghost</h4>
+          <button class="btn btn-ghost">Ver portfolio →</button>
+          <p style="font-size: 12px; color: rgba(28,28,31,0.6); margin: 0;">Acción secundaria. Fondo claro, borde sutil.</p>
+        </div>
+      </div>
+
+      <h3 style="margin: 40px 0 24px;">Cards (Portfolio)</h3>
+      <div class="card">
+        <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: rgba(28,28,31,0.5); text-transform: uppercase; letter-spacing: 1px; background: rgba(43, 182, 115, 0.1); padding: 4px 8px; border-radius: 6px; color: #2BB673;">E-COMMERCE</span>
+          <span style="font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; color: #2BB673; background: rgba(43, 182, 115, 0.1); padding: 4px 8px; border-radius: 6px;">● +34% leads</span>
+        </div>
+        <h3 style="margin-bottom: 8px;">MegaMuebles</h3>
+        <p style="margin-bottom: 16px;">Catálogo completo + SEO local para una mueblería con 20 años de trayectoria.</p>
+        <div style="display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap;">
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 4px 8px; background: rgba(28,28,31,0.06); border-radius: 6px; border: 1px solid rgba(28,28,31,0.1);">React</span>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 4px 8px; background: rgba(28,28,31,0.06); border-radius: 6px; border: 1px solid rgba(28,28,31,0.1);">Cloudinary</span>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 4px 8px; background: rgba(28,28,31,0.06); border-radius: 6px; border: 1px solid rgba(28,28,31,0.1);">GA4</span>
+        </div>
+        <a href="#" style="color: #2BB673; font-weight: 600; text-decoration: none;">Ver sitio en vivo →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Spacing -->
+  <section id="spacing">
+    <div class="container">
+      <h2>05 — Spacing & Rhythm</h2>
+      <p class="subtitle">Sistema de espaciado basado en múltiplos de 8px. Esto garantiza alineación en grillas y coherencia visual.</p>
+
+      <h3 style="margin-bottom: 32px;">Escala de spacing</h3>
+      <div style="display: grid; gap: 20px;">
+        <div class="spacing-ref" style="gap: 20px;">
+          <div class="spacing-box">
+            <div class="spacing-visual" style="width: 8px; height: 24px;"></div>
+            <div class="spacing-label">4px</div>
+          </div>
+          <div class="spacing-box">
+            <div class="spacing-visual" style="width: 8px; height: 48px;"></div>
+            <div class="spacing-label">8px</div>
+          </div>
+          <div class="spacing-box">
+            <div class="spacing-visual" style="width: 8px; height: 72px;"></div>
+            <div class="spacing-label">12px</div>
+          </div>
+          <div class="spacing-box">
+            <div class="spacing-visual" style="width: 8px; height: 96px;"></div>
+            <div class="spacing-label">16px</div>
+          </div>
+          <div class="spacing-box">
+            <div class="spacing-visual" style="width: 8px; height: 120px;"></div>
+            <div class="spacing-label">24px</div>
+          </div>
+          <div class="spacing-box">
+            <div class="spacing-visual" style="width: 8px; height: 160px;"></div>
+            <div class="spacing-label">32px</div>
+          </div>
+          <div class="spacing-box">
+            <div class="spacing-visual" style="width: 8px; height: 200px;"></div>
+            <div class="spacing-label">48px</div>
+          </div>
+          <div class="spacing-box">
+            <div class="spacing-visual" style="width: 8px; height: 240px;"></div>
+            <div class="spacing-label">64px</div>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="margin: 40px 0 24px;">Uso típico</h3>
+      <ul style="margin: 0; padding-left: 20px;">
+        <li><strong>4–8px:</strong> Padding interno de componentes pequeños (botones, chips)</li>
+        <li><strong>12–16px:</strong> Padding de cards, gap entre items pequeños</li>
+        <li><strong>24–32px:</strong> Padding vertical de secciones, gap entre cards</li>
+        <li><strong>48–64px:</strong> Padding vertical entre secciones grandes</li>
+        <li><strong>80–120px:</strong> Padding de secciones main (hero, servicios)</li>
+      </ul>
+
+      <h3 style="margin: 40px 0 24px;">Border radius</h3>
+      <div class="grid-3">
+        <div style="padding: 16px; background: rgba(43, 182, 115, 0.1); border: 1px solid rgba(43, 182, 115, 0.3); border-radius: 6px; text-align: center;">
+          <p style="margin: 0; font-size: 12px; color: rgba(28,28,31,0.6);">Tight</p>
+          <p style="margin: 8px 0 0; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600;">border-radius: 6px</p>
+        </div>
+        <div style="padding: 16px; background: rgba(43, 182, 115, 0.1); border: 1px solid rgba(43, 182, 115, 0.3); border-radius: 10px; text-align: center;">
+          <p style="margin: 0; font-size: 12px; color: rgba(28,28,31,0.6);">Standard</p>
+          <p style="margin: 8px 0 0; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600;">border-radius: 10px</p>
+        </div>
+        <div style="padding: 16px; background: rgba(43, 182, 115, 0.1); border: 1px solid rgba(43, 182, 115, 0.3); border-radius: 18px; text-align: center;">
+          <p style="margin: 0; font-size: 12px; color: rgba(28,28,31,0.6);">Large</p>
+          <p style="margin: 8px 0 0; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600;">border-radius: 18px</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Uso -->
+  <section id="uso">
+    <div class="container">
+      <h2>06 — Guías de uso</h2>
+      <p class="subtitle">Principios clave para mantener la identidad de marca consistente en todos los touchpoints.</p>
+
+      <h3 style="margin-bottom: 24px;">✓ Do's (Hazlo así)</h3>
+      <ul style="margin: 0; padding-left: 20px;">
+        <li>Usa Geist para headings. Es moderna, legible y robusta.</li>
+        <li>El verde #2BB673 es el acento principal. Úsalo en CTA, links, highlights.</li>
+        <li>Mantén mínimo 16px de base en mobile, 18px+ en desktop para body text.</li>
+        <li>Respeta los espacios mínimos del logo. Clear space = 1× altura del isotipo.</li>
+        <li>Usa la escala de spacing (8px multiples) para alineación. No improvises.</li>
+        <li>Colores oscuros (#0A0B0D) solo como background. En light mode, usa #1C1C1F.</li>
+        <li>Botones primary siempre verde + texto dark. Secondary: ghost con borde.</li>
+        <li>Las cards tienen sombra sutil (box-shadow con blur 10-20px).</li>
+      </ul>
+
+      <h3 style="margin: 40px 0 24px;">✗ Don'ts (Evita así)</h3>
+      <ul style="margin: 0; padding-left: 20px;">
+        <li>No uses otras tipografías sin aprobación. Geist, Inter, JetBrains Mono punto.</li>
+        <li>No uses el verde en texto de cuerpo. Cansa la vista. Solo en acciones/highlights.</li>
+        <li>No pongas texto smaller que 12px (excepto metadata/mono).</li>
+        <li>No estires el logo. Siempre proporción 1:1.</li>
+        <li>No uses sombras fuertes. Máximo blur: 20px, spread: −10px, opacity: 0.1.</li>
+        <li>No mezcles brand colors sin propósito. Cada color tiene un rol.</li>
+        <li>No hagas botones grises o plateados. Si no es primary, es ghost.</li>
+        <li>No crees nuevos colores "a gusto". La paleta está cerrada.</li>
+      </ul>
+
+      <div class="divider"></div>
+
+      <h3>Contacto & preguntas</h3>
+      <p>Para consultas sobre brand guidelines, uso de logo, o excepciones al sistema:</p>
+      <p style="margin-top: 20px;">
+        <strong>Email:</strong> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="422b2c242d6c31272e3423262b252b36232e02252f232b2e6c212d2f">[email&#160;protected]</a><br/>
+        <strong>Teléfono:</strong> +54 9 3548 550334<br/>
+        <strong>WhatsApp:</strong> +54 9 3548 550334
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <p style="margin: 0;">© 2026 Selva Digital · Guía de marca v1.0 · Christian A. Speziali</p>
+    <p style="margin: 8px 0 0; font-size: 12px;">Documento para uso interno. No distribuir sin autorización.</p>
+  </div>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script></body>
+</html>

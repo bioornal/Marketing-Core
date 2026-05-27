@@ -1,0 +1,184 @@
+{
+  "id": "selva-digital",
+  "name": "Selva Digital",
+  "slogan": "Tu web vendiendo 24/7. Sin cuotas, sin agencia.",
+  "website": "selvadigital.com",
+  "theme": {
+    "accent": "#2BB673",
+    "accentText": "#06140C",
+    "darkBg": "#0A0B0D",
+    "lightBg": "#FAFAFA",
+    "cardBg": "rgba(20, 22, 27, 0.65)",
+    "borderColor": "rgba(255, 255, 255, 0.06)",
+    "fonts": {
+      "headings": "Geist, sans-serif",
+      "body": "Inter, sans-serif",
+      "mono": "JetBrains Mono, monospace"
+    },
+    "radius": {
+      "chips": "6px",
+      "buttons": "10px",
+      "cards": "12px",
+      "hero": "20px"
+    }
+  },
+  "contact": {
+    "email": "info.selvadigital@gmail.com",
+    "whatsapp": "+54 9 3548 550334",
+    "timezone": "Argentina (UTC-3)"
+  },
+  "constraints": {
+    "scope": "Solo Argentina",
+    "maxProjects": 3,
+    "tags": ["PRÓXIMA VENTANA: JUNIO 2026", "2/3 CUPOS TOMADOS"]
+  },
+  "services": [
+    { "name": "Landing Page", "price": "$250.000" },
+    { "name": "Sitio Web", "price": "$400.000", "featured": true },
+    { "name": "Sitio a Medida", "price": "$550.000" },
+    { "name": "E-commerce", "price": "$700.000" },
+    { "name": "Chatbot con IA", "price": "$700.000+" },
+    { "name": "Sistema a medida", "price": "$900.000+" },
+    { "name": "App a medida", "price": "$1.000.000+" }
+  ],
+  "paymentTerms": "40% seña · 30% al aprobar diseño · 30% al ver el sitio funcionando. Primer año: dominio + hosting incluido. Sin cuotas mensuales.",
+  "seriesDefaults": {
+    "handle": "selva.digital",
+    "footer": "selva.digital",
+    "reelCta": "Pedime presupuesto → Link en bio.",
+    "industryFocus": "el mundo de las páginas web, los chatbots inteligentes, las apps a medida (web y Android) y los e-commerce en Argentina, aplicado a la vida real de PyMEs y comerciantes",
+    "kickers": {
+      "1": "01 ─── OBSERVACIÓN",
+      "2": "02 ─── DOLOR TECH",
+      "3": "03 ─── CRÍTICA",
+      "4": "04 ─── EL OFICIO",
+      "5": "05 ─── PRINCIPIO",
+      "6": "06 ─── SOLUCIÓN",
+      "7": "07 ─── COTIDIANO",
+      "8": "08 ─── MOMENTO",
+      "9": "09 ─── SELVA"
+    },
+    "anchorPresets": [
+      {
+        "label": "💻 Escritorio cotidiano",
+        "prompt": "An open laptop on a wooden desk next to a ceramic mate and a small notebook, soft morning window light through a curtain, black and white editorial photograph, Kinfolk magazine aesthetic, subtle 35mm film grain, deep shadows, no people, no faces, restrained composition with negative space"
+      },
+      {
+        "label": "📱 Chat sobre la mesa",
+        "prompt": "A smartphone resting on a textured concrete coffee shop table showing a WhatsApp Business chat notification, ceramic cup half-empty beside it, natural diffused light, monochrome editorial photography, no people in frame, Argentinian context"
+      },
+      {
+        "label": "🏪 Local de barrio",
+        "prompt": "Interior of a small Argentinian neighborhood shop at night, empty counter with a small tablet glowing softly showing an admin panel, warm reflections off the glass cases, black and white documentary style, no people, restrained composition with negative space"
+      },
+      {
+        "label": "🖐️ Manos tipeando",
+        "prompt": "Close-up of hands typing on a mechanical keyboard, a monitor partially visible at the side showing a website admin or code editor, no face visible, hands and forearms only, black and white editorial style, soft window light, 35mm film grain"
+      }
+    ]
+  },
+  "proofPoints": [
+    { "client": "MegaMuebles", "result": "+34% leads orgánicos", "angle": "Sillones y muebles a medida" },
+    { "client": "Iguazú Falls Lodge", "result": "67% reservas sin OTAs", "angle": "Cabañas y hotelería regional" },
+    { "client": "El Fogón Delivery", "result": "×2.3 ticket promedio", "angle": "Pizzerías y gastronomía local" },
+    { "client": "Vip Traslados Iguazú", "result": "CTR Ads ×2.1 (-40% CPC)", "angle": "Servicios de traslados turísticos" },
+    { "client": "Megabot Admin", "result": "3 bots, +1.200 msgs/día", "angle": "Automatización y atención al cliente" }
+  ],
+  "buyerPersona": {
+    "summary": "Dueño/a de PyME argentina (35-55 años), 1-15 empleados, factura entre $5M y $80M ARS al mes. Atiende ventas, marketing y operaciones a la vez. Tiene Instagram con seguidores reales pero ventas estancadas. Vende casi todo por WhatsApp porque 'siempre fue así'. Sabe que necesita algo más pero le da pánico tirar plata con una agencia que después desaparece o le cobra abono mensual eterno.",
+
+    "demografia": {
+      "edad": "35-55 años",
+      "ubicacion": "Argentina (foco Córdoba, NEA y ciudades del interior). Excluye AMBA porque ahí el cliente busca agencia con showroom.",
+      "facturacion": "$5M - $80M ARS/mes",
+      "empleados": "1-15 (mayoría 2-6)",
+      "rubros_calientes": [
+        "Gastronomía (pizzerías, parrillas, dark kitchens, delivery)",
+        "Hotelería regional (cabañas, hosterías, lodges, departamentos turísticos)",
+        "Muebles, carpinterías y fábricas con venta directa",
+        "Servicios turísticos (traslados, excursiones, alquileres)",
+        "Comercio mayorista y distribución",
+        "Salud privada (consultorios, centros médicos chicos, estética)",
+        "Inmobiliarias chicas y desarrollistas",
+        "Educación privada (cursos, academias, escuelas de oficios)"
+      ]
+    },
+
+    "dolores_por_servicio": {
+      "landing_o_sitio_web": [
+        "Tiene Instagram pero cuando lo googlean aparece la competencia o nada",
+        "La web actual la armó un sobrino en Wix hace 4 años y no se puede tocar",
+        "El sitio no carga bien en el celular y ahí entra el 85% del tráfico",
+        "No tiene formulario de contacto que avise por WhatsApp / mail",
+        "Los clientes le piden 'pasame el link de tu página' y manda capturas",
+        "Pagó pauta en Meta Ads y el anuncio caía a su perfil de Instagram, no a una landing → bajo conversion"
+      ],
+      "ecommerce": [
+        "Vende por DM y calcula el envío a mano en cada pedido",
+        "Tiene Tiendanube/Mercado Shops y le sangra 12-15% por venta + cuota mensual fija",
+        "No es 'dueño' del diseño: la tienda parece igual a las otras 50.000",
+        "Quiere integrar Mercado Pago + Andreani / Correo Argentino sin volverse loco",
+        "Pierde ventas fuera del horario de atención porque no hay carrito autoservicio",
+        "Necesita catálogo con stock real, no PDF que actualiza una vez por mes"
+      ],
+      "app_web_o_nativa": [
+        "Sus clientes le piden 'una app' aunque no la necesite — quiere saber si conviene",
+        "Tiene repartidores sin tracking, anota pedidos en planilla impresa",
+        "Recibe reservas/turnos en papel o Google Calendar y se le superponen",
+        "Quiere fidelizar con un programa de puntos pero no encontró nada que se adapte",
+        "Tiene un sistema interno en Excel que ya no escala (1 sucursal → 3 sucursales)"
+      ],
+      "chatbot_ia": [
+        "Atiende 40-80 WhatsApp por día contestando lo mismo: precio, horario, stock, envío, dirección",
+        "Responde mensajes desde la cama a las 23hs y a las 7am",
+        "Tiene un empleado/a dedicado solo a contestar WhatsApp = $400-600k/mes en sueldo",
+        "Probó ManyChat / chatbots de árbol y los clientes se frustraban → los apagó",
+        "Quiere algo que entienda lenguaje natural pero teme que 'el robot diga cualquier cosa'",
+        "Pierde leads de pauta paga fuera de horario porque nadie contesta"
+      ]
+    },
+
+    "objeciones_reales": [
+      "'¿Y si después de cobrarme no me responde más?' (miedo n°1)",
+      "'Mi sobrino me lo hace gratis con WordPress' → necesita ver el costo real (tiempo perdido, sin soporte, sin SEO)",
+      "'En Wix me sale $8.000 por mes nomás' → no entiende que esa cuota es eterna",
+      "'¿Lo puedo modificar yo después?' (clave: quiere autonomía sin depender)",
+      "'¿Y si quiero cambiar de proveedor el año que viene?' → por eso hosting + dominio van a su nombre",
+      "'Mi negocio no es para web, yo vendo todo por WhatsApp' → hay que demostrarle el costo de oportunidad",
+      "'No tengo tiempo para reunirme 10 veces' → valora el proceso corto y entregable claro",
+      "'¿Cuánto demora?' → quiere fecha de entrega real, no 'depende'"
+    ],
+
+    "lenguaje_que_usa": {
+      "dice": ["página web", "tener WhatsApp", "que aparezca en Google", "tienda online", "que me lleguen los pedidos al mail", "pauta", "boletín", "el chico/la chica que me lleva las redes"],
+      "no_dice": ["sitio", "landing", "SEO", "funnel", "leads", "CTR", "stack", "framework", "frontend", "transformación digital", "presencia digital"],
+      "regla_para_copy": "Hablarle como el dueño habla en su negocio: directo, rioplatense, con plata y tiempo concretos. Nada de inglés salvo que ya esté castellanizado (mail, link, online, WhatsApp). Si el copy usa 'leverage' o 'sinergia' lo perdiste."
+    },
+
+    "como_decide": [
+      "Googlea 'desarrollador web Córdoba' o '[ciudad] hacer página web'",
+      "Pregunta en grupos de WhatsApp de la cámara comercial o de colegas del rubro",
+      "Mira el Instagram del proveedor: si no tiene casos reales con números, descarta",
+      "Pide referencias de 2-3 clientes anteriores para llamarlos",
+      "Compara contra: agencia local con abono mensual, Wix/Tiendanube DIY, 'el sobrino', freelancer de Workana o Fiverr",
+      "Decide en 1-3 semanas. Si pasa más, perdió interés"
+    ],
+
+    "lo_que_NO_es": [
+      "No es founder de startup con inversores ni habla de runway",
+      "No le importan los frameworks ni la performance bajo Lighthouse",
+      "No busca 'transformación digital' — busca vender más y trabajar menos",
+      "No quiere aprender a usar el panel — quiere pedir cambios por WhatsApp",
+      "No tiene equipo de marketing — está él/ella y a veces el community manager"
+    ],
+
+    "trigger_de_compra": [
+      "Perdió una venta grande porque el cliente no encontró info en Google",
+      "El community manager renunció y se quedó sin nadie que conteste DMs",
+      "Un competidor sacó tienda online o chatbot y empezó a comerle ventas",
+      "Le subieron la cuota de Tiendanube / Wix y se cansó",
+      "Va a hacer pauta en Meta/Google y necesita una landing decente urgente",
+      "Va a abrir sucursal o sumar producto y la web actual ya no representa al negocio"
+    ]
+  }
+}
