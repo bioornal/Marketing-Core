@@ -167,10 +167,10 @@ export default function FlyerAdsPanel({
     const newPrompt = buildDefaultImagePrompt({
       brand: activeBrand,
       offer,
-      audience,
-      pain,
-      tone,
+      topic,
       visualStyle: styleId,
+      headline: copy.headline,
+      strictNoText,
     });
     setCopy(prev => ({ ...prev, imagePrompt: newPrompt }));
     setFinalFlyerDataUrl('');
@@ -206,10 +206,10 @@ export default function FlyerAdsPanel({
       imagePrompt: buildDefaultImagePrompt({
         brand: activeBrand,
         offer: nextDefaults.offer,
-        audience: nextDefaults.audience,
-        pain: nextDefaults.pain,
-        tone,
+        topic: isSelva ? 'Sitio web para cabañas en Puerto Iguazú' : '',
         visualStyle: initialStyle,
+        headline: isSelva ? '[¿Cabaña sin web] en Puerto Iguazú?' : 'Sigue una cuenta que convierte ideas en consultas',
+        strictNoText: true,
       }),
     }));
     setBackgroundDataUrl('');
@@ -251,15 +251,22 @@ export default function FlyerAdsPanel({
         tone: selectedTone?.label || tone,
         format,
         visualStyle,
+        topic,
+        strictNoText,
       });
       
-      // Fusinar el contenido del copy/topic con la plantilla de estilo premium seleccionada
-      nextCopy.imagePrompt = buildDefaultImagePrompt({
-        brand: activeBrand,
-        offer,
-        topic,
-        visualStyle,
-      });
+      // Si por alguna razón el LLM no generó el prompt visual, usamos el fallback precalculado.
+      // De lo contrario, respetamos el prompt personalizado generado por el LLM.
+      if (!nextCopy.imagePrompt) {
+        nextCopy.imagePrompt = buildDefaultImagePrompt({
+          brand: activeBrand,
+          offer,
+          topic,
+          visualStyle,
+          headline: nextCopy.headline,
+          strictNoText,
+        });
+      }
 
       setCopy(nextCopy);
       setCopyCost(0.0008);
@@ -276,7 +283,7 @@ export default function FlyerAdsPanel({
     setIsGeneratingImage(true);
     setFeedback(null);
     try {
-      const basePrompt = copy.imagePrompt || buildDefaultImagePrompt({ brand: activeBrand, offer, topic, visualStyle });
+      const basePrompt = copy.imagePrompt || buildDefaultImagePrompt({ brand: activeBrand, offer, topic, visualStyle, headline: copy.headline, strictNoText });
       const prompt = strictNoText
         ? `${basePrompt} STRICT NO-TEXT RULE: Absolute no text, no typography, no mock UI words, no letters, no numbers, no charts, no watermarks, no logos, no symbols. Clean background scene only.`
         : basePrompt;
@@ -673,7 +680,20 @@ export default function FlyerAdsPanel({
               <input
                 type="checkbox"
                 checked={strictNoText}
-                onChange={(e) => setStrictNoText(e.target.checked)}
+                onChange={(e) => {
+                  const nextVal = e.target.checked;
+                  setStrictNoText(nextVal);
+                  const newPrompt = buildDefaultImagePrompt({
+                    brand: activeBrand,
+                    offer,
+                    topic,
+                    visualStyle,
+                    headline: copy.headline,
+                    strictNoText: nextVal
+                  });
+                  setCopy(prev => ({ ...prev, imagePrompt: newPrompt }));
+                  setFinalFlyerDataUrl('');
+                }}
                 style={{ cursor: 'pointer', accentColor: 'var(--accent)' }}
               />
               <span>Forzar sin texto (Estricto)</span>

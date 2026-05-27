@@ -46,18 +46,20 @@ function brandLimits(brand) {
   return { limits, voice, persona };
 }
 
-export function buildFollowerAdPrompt({ brand, offer, audience, pain, tone, format, visualStyle = 'mockup' }) {
+export function buildFollowerAdPrompt({ brand, offer, audience, pain, tone, format, visualStyle = 'mockup', strictNoText = true, topic = '' }) {
   const { limits, voice, persona } = brandLimits(brand);
   const theme = brand?.theme || {};
   const seriesDefaults = brand?.seriesDefaults || {};
   const formatSpec = FORMAT_SPECS[format] || FORMAT_SPECS.portrait;
 
-  const styleGuidelines = {
-    mockup: "The visual style should be a multi-device mockup showcase (laptop, tablet, phone displaying clean web screens) with floating 3D geometric shapes and studio lighting.",
-    neon: "The visual style should be a 3D render of a laptop next to a physical glowing neon acrylic sign on a reflective dark surface.",
-    astronaut: "The visual style should be a cinematic astronaut in a spaceship cockpit with floating holographic sci-fi badges.",
-    minimalist: "The visual style should be a premium minimalist abstract background with dark graphite wave shapes and subtle neon brand lines."
-  }[visualStyle] || "A premium, high-converting commercial ad background.";
+  const baseVisualPrompt = buildDefaultImagePrompt({
+    brand,
+    offer,
+    topic,
+    visualStyle,
+    headline: '[HEADLINE_PLACEHOLDER]',
+    strictNoText
+  });
 
   return `
 Sos director creativo senior de Meta Ads, performance marketing e Instagram growth.
@@ -72,7 +74,6 @@ MARCA
 - Buyer persona base: ${persona}
 - Paleta: acento ${theme.accent || '#2BB673'}, fondo ${theme.darkBg || '#0A0B0D'}, texto ${theme.accentText || '#06140C'}
 - Mood visual: ${seriesDefaults.visualMood || 'premium, editorial, claro y de alta conversion'}
-- Estilo de imagen requerido: ${styleGuidelines}
 
 OBJETIVO DEL ANUNCIO
 - Campana: crecimiento de seguidores de Instagram, cuenta nueva, trafico frio.
@@ -91,9 +92,26 @@ REGLAS DE PERFORMANCE
 - No fuerces menciones con @.
 - No prometas resultados garantizados.
 - Evita palabras infladas como revolucionario, viral, magia, secretos millonarios.
-- La imagen NO debe contener texto. El texto lo compone la app encima.
 - DIALECTO IMPERATIVO: En los textos del flyer y caption, NO uses formas imperativas con acento rioplatense (ej: NO uses 'automatizá', 'vendé', 'escalá', 'seguí'). Usa obligatoriamente la forma imperativa estándar/tuteo (ej: 'automatiza', 'vende', 'escala', 'sigue', 'descubre').
 - FOCO EN RESULTADOS: NO enfoques el anuncio en comparaciones con agencias ni en por qué no contratar una agencia. El foco absoluto debe ser cómo el cliente gana TIEMPO o DINERO (ej: automatizar tareas repetitivas, no perder ventas por la noche, ahorrar horas de trabajo, etc.).
+
+REGLAS DE TEXTO EN LA IMAGEN:
+${strictNoText 
+  ? 'La imagen NO debe contener texto. El prompt de imagen ("imagePrompt") DEBE incluir explícitamente la regla: "STRICT NO-TEXT RULE: Absolute no text, letters, or numbers. Clean background scene only."' 
+  : 'La imagen DEBE incorporar el texto del Headline generado de forma visualmente atractiva en la composición. Indica en el "imagePrompt" (en inglés) que el Headline exacto generado debe aparecer escrito de manera perfectamente legible y estética.'}
+
+PROMPT VISUAL BASE DE REFERENCIA
+"${baseVisualPrompt}"
+
+INSTRUCCIONES PARA EL "imagePrompt" EN EL JSON:
+1. Toma el "PROMPT VISUAL BASE DE REFERENCIA" anterior como plantilla.
+2. Analiza los detalles de este Brief (Oferta: "${offer}", Audiencia: "${audience}", Dolor: "${pain}", Tema: "${topic}").
+3. Modifica y enriquece ese prompt en inglés para que los elementos representados en las pantallas, iconos o entorno reflejen de manera específica, creativa y de alta fidelidad tu temática y brief. Evita términos genéricos y describe detalles visuales acordes.
+4. Escribe el prompt final completamente en inglés.
+5. TEXTO EN LA IMAGEN:
+   ${strictNoText 
+     ? 'Asegúrate de mantener y enfatizar la regla de NO incluir texto: "STRICT NO-TEXT RULE: Absolute no text, letters, or numbers".' 
+     : 'Dado que NO está activada la regla estricta de no-texto, debes reemplazar "[HEADLINE_PLACEHOLDER]" en el prompt base de referencia con el texto del Headline exacto que acabás de generar en este mismo llamado, y detallar (en inglés) cómo este texto está integrado y es perfectamente legible en la composición (ej. en la pantalla o en un cartel de neón).'}
 
 Devolve SOLO JSON valido:
 {
@@ -102,52 +120,88 @@ Devolve SOLO JSON valido:
   "cta": "max 4 palabras",
   "caption": "caption corto para Meta/IG, sin hashtags",
   "proof": "micro-prueba o criterio editorial, max 10 palabras",
-  "imagePrompt": "prompt en ingles para GPT Image 2, sin texto en imagen, alineado con el estilo de imagen requerido, respetando marca y estilo"
+  "imagePrompt": "prompt final personalizado en ingles para GPT Image 2, siguiendo las instrucciones de enriquecimiento del brief y reglas de texto en imagen"
 }
 `.trim();
 }
 
-export async function generateFlyerConcept({ brand, openaiKey, offer, audience, pain, tone, format, visualStyle = 'mockup' }) {
+export async function generateFlyerConcept({ brand, openaiKey, offer, audience, pain, tone, format, visualStyle = 'mockup', topic = '', strictNoText = true }) {
   if (!openaiKey) throw new Error('Clave de OpenAI no configurada.');
-  const prompt = buildFollowerAdPrompt({ brand, offer, audience, pain, tone, format, visualStyle });
+  const prompt = buildFollowerAdPrompt({ brand, offer, audience, pain, tone, format, visualStyle, strictNoText, topic });
   const raw = await generateTextWithOpenAI(prompt, openaiKey, { maxOutputTokens: 1200, temperature: 0.65 });
   const parsed = parseCopyPayload(raw);
   if (!parsed.imagePrompt) {
-    parsed.imagePrompt = buildDefaultImagePrompt({ brand, offer, audience, pain, tone, visualStyle });
+    parsed.imagePrompt = buildDefaultImagePrompt({ brand, offer, topic, visualStyle, headline: parsed.headline, strictNoText });
   }
   return parsed;
 }
 
 const VISUAL_STYLE_PROMPTS = {
-  mockup: (brand, accent, darkBg, accentText) => [
-    `A premium, ultra-colorful 3D render and high-end commercial product photography of a modern laptop, a sleek tablet, and a smartphone displaying gorgeous, colorful, highly-designed mock web interfaces with realistic graphics, buttons, and user profiles on their screens.`,
-    `The devices are placed on a sleek, glossy reflective glass surface.`,
-    `Surrounded by beautiful, vibrant, floating 3D geometric shapes, spheres, rings, and outline diamonds in glowing brand accent color (${accent}) and electric cyan.`,
-    `The background is a beautiful, highly polished studio setup with a vibrant, modern gradient in shades of royal blue, violet, and soft brand highlights, creating an extremely premium, premium, and clean advertising aesthetic.`,
-    `Extremely detailed, octane render quality, 8k resolution, photorealistic, strict no-text rule on background or screens (clean UI placeholders only), perfect symmetry and negative space for text overlay.`
-  ].join(' '),
+  mockup: (brand, accent, darkBg, accentText, webSubject, iconType, options = {}) => {
+    const { strictNoText = true, headline = '' } = options;
+    const cleanHeadline = headline.replace(/\[|\]/g, '');
+    const textInstruction = strictNoText
+      ? `STRICT NO-TEXT RULE: Absolute no text, no typography, no mock UI words, no letters, no numbers, no charts, no watermarks, no logos, no symbols. Clean background scene only.`
+      : `Featuring the bold, highly-stylized, professional typography saying exactly "${cleanHeadline}" beautifully integrated onto the main laptop screen or as sleek floating 3D text in the scene. The typography is modern, clean, and perfectly legible.`;
 
-  neon: (brand, accent, darkBg, accentText) => [
-    `A highly detailed, vibrant 3D rendering of a sleek, modern open laptop displaying a gorgeous, colorful, detailed web interface next to a physical, glowing physical acrylic neon sign showing an eye-catching graphic, casting a brilliant and intense glow.`,
-    `The entire scene rests on a highly reflective blue-black glass table with perfect mirror reflections.`,
-    `Illuminated by intense, beautiful neon volumetric lighting in brand accent color (${accent}) and vibrant cyan, creating colorful reflections, sparkles, and a premium futuristic tech vibe.`,
-    `The background features glowing neon wave lines and digital particles in a deep navy and brand color gradient.`,
-    `Octane render style, photorealistic, 8k resolution, strict no-text rule on the background, massive negative space for text overlay.`
-  ].join(' '),
+    return [
+      `A premium, ultra-colorful 3D render and high-end commercial product photography of a modern laptop, a sleek tablet, and a smartphone displaying gorgeous, colorful, highly-designed mock web interfaces showing ${webSubject || 'a professional landing page'} with realistic graphics, buttons, and user profiles on their screens.`,
+      `The devices are placed on a sleek, glossy reflective glass surface.`,
+      `Surrounded by beautiful, vibrant, floating 3D geometric shapes, spheres, rings, and outline diamonds in glowing brand accent color (${accent}) and electric cyan.`,
+      `The background is a beautiful, highly polished studio setup with a vibrant, modern gradient in shades of royal blue, violet, and soft brand highlights, creating an extremely premium, premium, and clean advertising aesthetic.`,
+      `Extremely detailed, octane render quality, 8k resolution, photorealistic, perfect symmetry and negative space.`,
+      textInstruction
+    ].join(' ');
+  },
 
-  astronaut: (brand, accent, darkBg, accentText) => [
-    `A cinematic, high-end concept art of an astronaut in a futuristic, premium spaceship cockpit looking through a circular window showing a gorgeous view of planet Earth.`,
-    `Vibrant, glowing holographic UI screens, scientific tech badges, and abstract glowing spheres float in the air in brand accent color (${accent}) and neon blue.`,
-    `Vibrant volumetric lighting, dramatic cinematic colors, high contrast, glossy surfaces.`,
-    `Octane render quality, photorealistic, 8k, strict no text or words on UI, dark composition with perfect clean negative space for overlay text.`
-  ].join(' '),
+  neon: (brand, accent, darkBg, accentText, webSubject, iconType, options = {}) => {
+    const { strictNoText = true, headline = '' } = options;
+    const cleanHeadline = headline.replace(/\[|\]/g, '');
+    const textInstruction = strictNoText
+      ? `STRICT NO-TEXT RULE: Absolute no text, no typography, no letters, no numbers. Clean background scene only.`
+      : `The glowing physical acrylic neon sign actually displays the text "${cleanHeadline}" in vibrant, glowing, highly-stylized letters, casting a brilliant and intense glow.`;
 
-  minimalist: (brand, accent, darkBg, accentText) => [
-    `A premium, sophisticated abstract 3D background.`,
-    `Smooth, sweeping glossy carbon fiber waves and elegant graphite curves casting soft shadows.`,
-    `Illuminated by sharp, vibrant neon tubes and glowing accent lines in brand color (${accent}) and hot pink.`,
-    `High-end luxury commercial catalog aesthetic, massive clean negative space for high-impact bold typography overlay, 8k resolution, strictly no text.`
-  ].join(' ')
+    return [
+      `A highly detailed, vibrant 3D rendering of a sleek, modern open laptop displaying a gorgeous, colorful, detailed web interface showing ${webSubject || 'a clean digital landing page'} next to a physical, glowing physical acrylic neon sign showing ${iconType || 'a customized abstract brand icon outline'}, casting a brilliant and intense glow.`,
+      `The entire scene rests on a highly reflective blue-black glass table with perfect mirror reflections.`,
+      `Illuminated by intense, beautiful neon volumetric lighting in brand accent color (${accent}) and vibrant cyan, creating colorful reflections, sparkles, and a premium futuristic tech vibe.`,
+      `The background features glowing neon wave lines and digital particles in a deep navy and brand color gradient.`,
+      `Octane render style, photorealistic, 8k resolution, massive negative space.`,
+      textInstruction
+    ].join(' ');
+  },
+
+  astronaut: (brand, accent, darkBg, accentText, webSubject, iconType, options = {}) => {
+    const { strictNoText = true, headline = '' } = options;
+    const cleanHeadline = headline.replace(/\[|\]/g, '');
+    const textInstruction = strictNoText
+      ? `STRICT NO-TEXT RULE: Absolute no text, no typography, no letters, no numbers, no words.`
+      : `A prominent glowing holographic UI screen in the center floats and displays the bold, stylized title text "${cleanHeadline}" in an ultra-modern sci-fi font, perfectly integrated and highly legible.`;
+
+    return [
+      `A cinematic, high-end concept art of an astronaut in a futuristic, premium spaceship cockpit looking through a circular window showing a gorgeous view of planet Earth.`,
+      `Vibrant, glowing holographic UI screens showing ${webSubject || 'futuristic diagnostic details'}, scientific tech badges, and abstract glowing spheres float in the air in brand accent color (${accent}) and neon blue.`,
+      `Vibrant volumetric lighting, dramatic cinematic colors, high contrast, glossy surfaces.`,
+      `Octane render quality, photorealistic, 8k, dark composition with perfect clean negative space.`,
+      textInstruction
+    ].join(' ');
+  },
+
+  minimalist: (brand, accent, darkBg, accentText, webSubject, iconType, options = {}) => {
+    const { strictNoText = true, headline = '' } = options;
+    const cleanHeadline = headline.replace(/\[|\]/g, '');
+    const textInstruction = strictNoText
+      ? `STRICT NO-TEXT RULE: Absolute no text, no letters, no numbers, no words.`
+      : `Featuring the high-contrast, bold, premium minimalist typography of the headline "${cleanHeadline}" elegantly integrated into the 3D space, casting soft shadows, perfectly clean and legible.`;
+
+    return [
+      `A premium, sophisticated abstract 3D background.`,
+      `Smooth, sweeping glossy carbon fiber waves and elegant graphite curves casting soft shadows.`,
+      `Illuminated by sharp, vibrant neon tubes and glowing accent lines showing abstract geometric representations of ${webSubject || 'a digital ecosystem'} in brand color (${accent}) and hot pink.`,
+      `High-end luxury commercial catalog aesthetic, massive clean space, 8k resolution.`,
+      textInstruction
+    ].join(' ');
+  }
 };
 
 function getVisualSubject({ brand, offer, topic }) {
@@ -192,7 +246,7 @@ function getVisualSubject({ brand, offer, topic }) {
   };
 }
 
-export function buildDefaultImagePrompt({ brand, offer, topic, visualStyle = 'mockup' }) {
+export function buildDefaultImagePrompt({ brand, offer, topic, visualStyle = 'mockup', headline = '', strictNoText = true }) {
   const theme = brand?.theme || {};
   const accent = theme.accent || '#2BB673';
   const darkBg = theme.darkBg || '#0A0B0D';
@@ -201,7 +255,7 @@ export function buildDefaultImagePrompt({ brand, offer, topic, visualStyle = 'mo
   const { webSubject, iconType } = getVisualSubject({ brand, offer, topic });
 
   const styleBuilder = VISUAL_STYLE_PROMPTS[visualStyle] || VISUAL_STYLE_PROMPTS.mockup;
-  return styleBuilder(brand, accent, darkBg, accentText, webSubject, iconType);
+  return styleBuilder(brand, accent, darkBg, accentText, webSubject, iconType, { headline, strictNoText });
 }
 
 export async function generateFlyerBackground({ imagePrompt, openaiKey }) {
