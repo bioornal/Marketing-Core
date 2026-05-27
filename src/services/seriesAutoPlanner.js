@@ -10,6 +10,7 @@
 
 import { generateTextWithGemini, analyzeImageWithGemini } from './gemini';
 import { generateTextWithOpenAI, analyzeImageWithOpenAI } from './openai';
+import { buildAnglePromptBlock } from './copyAngles';
 
 /**
  * Analiza el ancla con visión IA y extrae SU ESTILO VISUAL (no su sujeto).
@@ -388,6 +389,153 @@ Respondé ÚNICAMENTE con un objeto JSON válido (sin markdown, sin \`\`\`, sin 
   return parsed.ideas.filter(s => typeof s === 'string' && s.trim().length > 0).slice(0, 10);
 }
 
+/**
+ * Genera el copy de los slides 2..N de un carrusel a partir del slide 1 ya existente.
+ * Slide 1 vive en slot.copy.headline / slot.copy.caption — esos son la portada.
+ * El resto de slides son el "desarrollo" del argumento (slides 2..N-1) + el cierre (slide N).
+ *
+ * NO genera imágenes — sólo headline + body por slide. La imagen la hace el user en CanvasStudio.
+ * Devuelve un array de length (count - 1) con { headline, body } por slide.
+ */
+export async function generateCarouselSlides({
+  slot, brand, series, count,
+  geminiKey, openaiKey, preferredProvider
+}) {
+  if (!slot || !brand || !series) throw new Error('Falta slot, brand o series.');
+  if (!geminiKey && !openaiKey) throw new Error('Configurá una clave de IA (Gemini u OpenAI) en Ajustes.');
+  const totalSlides = Math.max(3, Math.min(10, count));
+  const extrasNeeded = totalSlides - 1;
+
+  const brandName = brand.name || 'la marca';
+  const handle = brand?.seriesDefaults?.handle
+    || (brand?.id === 'selva-digital' ? 'selva.digital' : (brand?.id || '').replace('-', '.'));
+  const industryFocus = brand?.seriesDefaults?.industryFocus
+    || "el rubro al que pertenece la marca";
+  const voiceInfo = brand?.seriesDefaults?.voice
+    || (brand?.id === 'selva-digital'
+        ? 'Directo, coloquial argentino (rioplatense), "vos" en lugar de "tú". Frases muy cortas y filosas. Sin jerga corporativa.'
+        : 'Profesional, cálido, centrado en transformación real del cliente.');
+
+  const isFinalSlot = slot.number === 9;
+  const slideHints = [];
+  // Estructura editorial estándar de un carrusel persuasivo:
+  // Slide 1 (ya existe): portada / gancho
+  // Slides 2..N-1: desarrollo (1 idea por slide)
+  // Slide N: cierre + CTA contextual (sin venta dura salvo en slot 9)
+  for (let i = 2; i <= totalSlides; i++) {
+    let role;
+    if (i === totalSlides) {
+      role = isFinalSlot
+        ? 'CIERRE FUERTE — slot 9: aquí SÍ podés presentar la marca con CTA directo (link en bio, WhatsApp). Una sola promesa concreta + acción clara.'
+        : 'CIERRE EDITORIAL — sin venta directa. Dejá al lector con una pregunta, una reflexión filosa, o una idea para llevarse. La marca firma con el handle en el footer, no acá.';
+    } else if (i === 2) {
+      role = 'DESARROLLO 1 — abrí el argumento. Profundizá el dolor / la observación de la portada. Concreto, anecdótico, sin abstracciones.';
+    } else if (i === totalSlides - 1) {
+      role = 'DESARROLLO FINAL antes del cierre — momento de mayor tensión. La idea más fuerte del carrusel va acá (un dato, una verdad incómoda, un giro).';
+    } else {
+      role = `DESARROLLO ${i - 1} — UNA idea nueva, distinta a las anteriores. Progresión clara: cada slide suma, no repite.`;
+    }
+    slideHints.push(`Slide ${i}: ${role}`);
+  }
+
+  const angleBlock = buildAnglePromptBlock(series?.copyAngle);
+
+  const prompt = `Estás redactando el copy de los slides 2 a ${totalSlides} de un CARRUSEL de Instagram.
+El slide 1 (portada) ya existe — los slides nuevos son el DESARROLLO del argumento y el CIERRE.${angleBlock}
+
+═══════════════════════════════════════════════════════
+REGLA DE ORO — LA MARCA ES AUTORA, NO TEMA
+═══════════════════════════════════════════════════════
+"${brandName}" es la AUTORA del contenido. NO hables de sus servicios/productos/clientes.
+${isFinalSlot
+  ? 'Este es el slot 9 — sólo aquí el slide de cierre puede mencionar a la marca con CTA directo.'
+  : `Este NO es el slot 9. NO menciones a "${brandName}", NO uses el slogan, NO pongas CTA de venta. La marca firma sólo en el footer de la gráfica.`}
+El carrusel habla sobre ${industryFocus}, observando el mundo del buyer persona.
+
+═══════════════════════════════════════════════════════
+CONTEXTO DEL CARRUSEL
+═══════════════════════════════════════════════════════
+HILO CONDUCTOR DE LA SERIE: "${series.topic || ''}"
+TEMA DE ESTE SLOT (slot ${slot.number}/9): ${slot.copy?.kicker || ''}
+ARCO NARRATIVO: ${slot.arcoTiempo} de 3
+
+SLIDE 1 — PORTADA YA EXISTENTE (NO LA REPITAS, ARRANCÁ DESDE AHÍ):
+- Headline portada: "${(slot.copy?.headline || '').replace(/"/g, "'")}"
+- Caption del post: "${(slot.copy?.caption || '').slice(0, 400).replace(/"/g, "'")}"
+
+═══════════════════════════════════════════════════════
+TONO Y REGLAS
+═══════════════════════════════════════════════════════
+TONO: ${voiceInfo}
+
+REGLAS DURAS:
+- Cada slide tiene UN headline grande (6-12 palabras, 1-3 líneas separadas por \\n) + UN body corto (máx 30 palabras, opcional).
+- La última palabra del headline es el acento (irá en verde de marca).
+- PROHIBIDO mencionar a "${brandName}" salvo en el slide final si es slot 9.
+- PROHIBIDO ABSOLUTO: hashtags. NI UNO. Cero "#".
+- PROHIBIDO emojis marketeros (🚀💯🔥). Permitidos sobrios y puntuales (✓ ✗ · → ←).
+- Una sola idea por slide. Progresión clara: el slide ${totalSlides} cierra lo que el slide 1 abrió.
+- Cada headline tiene que poder LEERSE EN 2 SEGUNDOS al hacer swipe. Si necesita context, va en el body, no en el headline.
+
+═══════════════════════════════════════════════════════
+ROL DE CADA SLIDE (NO MEZCLAR)
+═══════════════════════════════════════════════════════
+${slideHints.join('\n')}
+
+═══════════════════════════════════════════════════════
+FORMATO DE SALIDA — JSON ESTRICTO
+═══════════════════════════════════════════════════════
+Respondé ÚNICAMENTE con JSON válido (sin markdown, sin \`\`\`, sin texto antes/después).
+
+{
+  "slides": [
+${Array.from({ length: extrasNeeded }, (_, i) => `    { "slideNumber": ${i + 2}, "headline": "Texto\\ndel slide ${i + 2}", "body": "Bajada opcional corta o cadena vacía." }`).join(',\n')}
+  ]
+}
+
+Generá AHORA los ${extrasNeeded} slides en orden de slide ${2} a ${totalSlides}.`;
+
+  const providers = preferredProvider === 'openai' ? ['openai', 'gemini'] : ['gemini', 'openai'];
+  const options = { maxOutputTokens: 2500, temperature: 0.8 };
+  let raw = null;
+  let lastErr = null;
+
+  for (const provider of providers) {
+    try {
+      if (provider === 'gemini' && geminiKey) {
+        raw = await generateTextWithGemini(prompt, geminiKey, 'application/json', options);
+        break;
+      } else if (provider === 'openai' && openaiKey) {
+        raw = await generateTextWithOpenAI(prompt, openaiKey, options);
+        break;
+      }
+    } catch (err) {
+      lastErr = err;
+      console.warn(`Carousel slides falló con ${provider}:`, err);
+    }
+  }
+  if (!raw) throw new Error(lastErr?.message || 'Ambos proveedores de IA fallaron.');
+
+  const cleaned = raw.trim().replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+  let parsed;
+  try {
+    parsed = JSON.parse(cleaned);
+  } catch (err) {
+    throw new Error(`La IA devolvió texto que no es JSON. (${err.message})`);
+  }
+  if (!Array.isArray(parsed?.slides) || parsed.slides.length === 0) {
+    throw new Error('La IA no devolvió un array de slides válido.');
+  }
+  return parsed.slides
+    .filter(s => s && typeof s.headline === 'string')
+    .slice(0, extrasNeeded)
+    .map((s, i) => ({
+      slideNumber: i + 2,
+      headline: (s.headline || '').trim(),
+      body: (s.body || '').trim()
+    }));
+}
+
 function buildBatchPrompt(series, brand, batchSlots, batchLabel) {
   const brandName = brand?.name || 'la marca';
   const handle = brand?.seriesDefaults?.handle
@@ -437,7 +585,9 @@ PALABRAS QUE NO USA (evitalas): ${(lg.no_dice || []).join(', ')}`;
         ? 'Directo, coloquial argentino (rioplatense), "vos" en lugar de "tú". Frases muy cortas. Evitar palabras corporativas o jerga técnica. Hablar de resultados reales.'
         : 'Profesional, cálido, centrado en la transformación real del cliente.');
 
-  return `Sos un estratega de contenido editorial para Instagram. Vas a planificar UNA SERIE COMPLETA de 9 publicaciones para que se vea como una grilla 3×3 coherente en el feed.
+  const angleBlock = buildAnglePromptBlock(series?.copyAngle);
+
+  return `Sos un estratega de contenido editorial para Instagram. Vas a planificar UNA SERIE COMPLETA de 9 publicaciones para que se vea como una grilla 3×3 coherente en el feed.${angleBlock}
 
 ═══════════════════════════════════════════════════════
 REGLA DE ORO — LA MARCA ES AUTORA, NO TEMA
@@ -503,6 +653,7 @@ REQUISITOS DE CADA CAPTION
 - Slots 1-8: NO menciones @${handle}, NO hagas CTA de venta, cerrá con pregunta o reflexión.
 - Slot 9: SÍ menciona @${handle} y hacé CTA con "Link en bio" / "Escribime al WhatsApp".
 - Permitidos: emojis sobrios (✓, ✗, ·, →, ←). Prohibidos: 🚀, 💯, 🔥, y emojis saturados.
+- PROHIBIDO ABSOLUTO: hashtags. NI UNO. Cero "#" en TODOS los slots. Los hashtags ya no aportan alcance orgánico en Instagram 2026 y rompen el tono editorial premium de la serie. El caption queda 100% limpio.
 
 ═══════════════════════════════════════════════════════
 REQUISITOS DE CADA visualPlan

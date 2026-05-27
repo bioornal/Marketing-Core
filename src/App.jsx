@@ -569,7 +569,12 @@ Por favor entregá dos secciones separadas obligatoriamente:
    - PROHIBIDO frases vagas tipo "Dejá de perder ventas ya" o "Hacé crecer tu negocio". Tiene que estar atado al tema específico del post.
    - Pensá: si alguien ve SOLO esta gráfica sin caption, ¿entiende de qué se trata el post? Si la respuesta es no, reescribilo.
 
-2. [CAPTION]: El copy persuasivo para la publicación de Instagram con emojis y hashtags adecuados. Debe incluir siempre mención del usuario en el formato "@${brand.name.toLowerCase().replace(/\s+/g, '.')}".` : `Canal: Instagram Story (9:16).
+2. [CAPTION]: El copy persuasivo para la publicación de Instagram. Reglas:
+   - Tono editorial, conversacional rioplatense. Sin sonar a "anuncio".
+   - Permitidos emojis sobrios y puntuales (✓, ✗, ·, →, ←) cuando sumen jerarquía. Evitar emojis marketeros saturados (🚀, 💯, 🔥, 💪).
+   - PROHIBIDO usar hashtags. NI UNO. Hashtags ya no aportan alcance orgánico en Instagram 2026 y ensucian el caption editorial. Si querés categorizar, dejá el caption limpio: los hashtags van — opcionalmente — en el primer comentario, no acá.
+   - PROHIBIDO menciones forzadas a la propia marca con @ en el cuerpo. Si tiene sentido firmar al final, se hace de forma orgánica, no como CTA automatizado.
+   - Cerrá con una pregunta, una reflexión o un CTA contextual (no genérico).` : `Canal: Instagram Story (9:16).
 Por favor entregá:
 1. [TEXTO HISTORIA]: Texto corto y potente en tarjetas de lectura rápida para superponer en la historia (máx 3-4 líneas).
 2. [TEXTO STICKER]: El texto que irá en el sticker interactivo con llamado a la acción.`}
@@ -1702,8 +1707,13 @@ Cada objeto del array JSON debe tener la siguiente estructura exacta:
             openaiKey={openaiKey}
             preferredProvider={preferredProvider}
             falaiKey={falaiKey}
-            onOpenCanvasStudio={(slot, applyUpdate) => {
+            onOpenCanvasStudio={(slot, applyUpdate, slideIdx) => {
               setPlatform('feed');
+
+              // slideIdx (opcional): si es número >= 0, estamos editando un slide del carrusel.
+              // Levantamos su canvasState/headline. Si es null/undefined, editamos el slot principal.
+              const isCarouselSlide = typeof slideIdx === 'number' && slideIdx >= 0;
+              const slideRef = isCarouselSlide ? slot.carouselSlides?.[slideIdx] : null;
 
               // Si el slot ya tiene un canvasState guardado de una edición previa,
               // lo restauramos tal cual. Si no, armamos los defaults para esta marca.
@@ -1722,11 +1732,14 @@ Cada objeto del array JSON debe tener la siguiente estructura exacta:
                 showBrandMark: true
               };
 
-              const savedBg = slot.canvasState?.bgOptions;
-              const savedText = slot.canvasState?.text;
+              const savedBg = isCarouselSlide ? slideRef?.canvasState?.bgOptions : slot.canvasState?.bgOptions;
+              const savedText = isCarouselSlide ? slideRef?.canvasState?.text : slot.canvasState?.text;
+              const seedText = isCarouselSlide
+                ? (savedText ?? slideRef?.headline ?? `Slide ${slideIdx + 2}`)
+                : (savedText ?? slot.copy.headline ?? "Titular de Gráfica");
 
               setBgOptions(savedBg ? { ...defaultBg, ...savedBg } : defaultBg);
-              setImageText(savedText ?? slot.copy.headline ?? "Titular de Gráfica");
+              setImageText(seedText);
 
               setCanvasApplyCallback(() => (dataUrl, text, finalBg) => {
                 // applyUpdate viene de SeriesPlanner y usa su updateSlot local.

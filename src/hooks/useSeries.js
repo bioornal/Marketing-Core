@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { scaffoldNineSlots, validateSeries, getPatternById } from '../services/seriesPlanner';
+import { scaffoldNineSlots, validateSeries, getPatternById, createEmptyCarouselSlide } from '../services/seriesPlanner';
 
 const INDEX_KEY = "series_index";
 const ACTIVE_KEY = "active_series_id";
@@ -19,7 +19,7 @@ export function useSeriesList() {
     localStorage.setItem(INDEX_KEY, JSON.stringify(newIndex));
   };
 
-  const createNewSeries = ({ brandId, topic, startDate, cadence, brand }) => {
+  const createNewSeries = ({ brandId, topic, startDate, cadence, brand, copyAngle = null }) => {
     // Recolectar patternIds de series existentes de esta MISMA marca,
     // ordenadas de más nueva a más vieja (así rotamos por las no usadas recientemente).
     const sameBrandSeries = index
@@ -40,7 +40,7 @@ export function useSeriesList() {
       } catch { /* ignore corrupt entries */ }
     }
 
-    const newSeries = scaffoldNineSlots({ brandId, topic, startDate, cadence, brand, usedPatternIds });
+    const newSeries = scaffoldNineSlots({ brandId, topic, startDate, cadence, brand, usedPatternIds, copyAngle });
 
     // Guardar la serie completa
     localStorage.setItem(`series_${newSeries.id}`, JSON.stringify(newSeries));
@@ -284,6 +284,63 @@ export function useSeries(seriesId) {
     saveSeries(updated);
   };
 
+  /**
+   * Activa/desactiva carrusel para un slot.
+   * Al activar por primera vez, inicializa con 2 slides extra (slide 2 y slide 3),
+   * formando un carrusel mínimo viable de 3 slides (slide 1 ya es el slot principal).
+   * Al desactivar, conserva los slides en memoria por si lo reactivan — sólo cambia el flag.
+   */
+  const toggleCarousel = (slotNumber) => {
+    if (!series) return;
+    const slot = series.slots.find(s => s.number === slotNumber);
+    if (!slot) return;
+    const next = !slot.isCarousel;
+    const patch = { isCarousel: next };
+    if (next && (!slot.carouselSlides || slot.carouselSlides.length === 0)) {
+      patch.carouselSlides = [createEmptyCarouselSlide(2), createEmptyCarouselSlide(3)];
+    }
+    updateSlot(slotNumber, patch);
+  };
+
+  /**
+   * Cambia el total de slides del carrusel a `count` (incluyendo el slide 1).
+   * count debe estar entre 2 y 10. Si crece, agrega slides vacíos; si encoge, recorta el final.
+   * No toca slide 1 (que vive en slot.generatedImageBase64 + slot.copy.headline).
+   */
+  const setCarouselSlideCount = (slotNumber, count) => {
+    if (!series) return;
+    const slot = series.slots.find(s => s.number === slotNumber);
+    if (!slot) return;
+    const clamped = Math.max(2, Math.min(10, count));
+    const extraNeeded = clamped - 1;
+    const current = slot.carouselSlides || [];
+    let next;
+    if (current.length === extraNeeded) {
+      return;
+    } else if (current.length < extraNeeded) {
+      const additions = [];
+      for (let i = current.length; i < extraNeeded; i++) {
+        additions.push(createEmptyCarouselSlide(i + 2));
+      }
+      next = [...current, ...additions];
+    } else {
+      next = current.slice(0, extraNeeded);
+    }
+    updateSlot(slotNumber, { carouselSlides: next, isCarousel: true });
+  };
+
+  /**
+   * Actualiza un slide del carrusel (índice 0 = slide 2, índice 1 = slide 3, etc.).
+   * Hace merge superficial; preserva campos no tocados.
+   */
+  const updateCarouselSlide = (slotNumber, slideIdx, patch) => {
+    if (!series) return;
+    const slot = series.slots.find(s => s.number === slotNumber);
+    if (!slot || !slot.carouselSlides || slideIdx < 0 || slideIdx >= slot.carouselSlides.length) return;
+    const nextSlides = slot.carouselSlides.map((s, i) => i === slideIdx ? { ...s, ...patch } : s);
+    updateSlot(slotNumber, { carouselSlides: nextSlides });
+  };
+
   return {
     series,
     loading,
@@ -293,7 +350,10 @@ export function useSeries(seriesId) {
     setAnchorStyleDescription,
     saveSeries,
     approveAllSlots,
-    swapGridPattern
+    swapGridPattern,
+    toggleCarousel,
+    setCarouselSlideCount,
+    updateCarouselSlide
   };
 }
 

@@ -97,6 +97,27 @@
 .cs-brand-select:hover { color: var(--ink-8); border-color: var(--ink-4); }
 .cs-brand-select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
+/* Opciones del dropdown: por default el browser las pinta con colores del SO
+   (fondo claro sobre tema oscuro = ilegible). Forzamos paleta del tema.
+   Chrome/Firefox respetan estos estilos; Safari los ignora parcialmente. */
+.cs-brand-select option {
+  background-color: #0A0B0D;
+  color: #E8ECF2;
+  font-family: var(--font-mono);
+  letter-spacing: var(--track-mono-tight);
+  text-transform: uppercase;
+  padding: 8px;
+}
+.cs-brand-select option:checked,
+.cs-brand-select option:hover,
+.cs-brand-select option:focus {
+  background-color: var(--accent);
+  color: #0A0B0D;
+}
+.cs-brand-select option:disabled {
+  color: var(--ink-5);
+}
+
 /* ----- STEPS RAIL ----- */
 .cs-steps {
   grid-area: steps;

@@ -179,25 +179,65 @@ export async function exportSeriesAsZip(series, brandName) {
     const pubOrder = String(idx + 1).padStart(2, '0');
     const slotNum = String(slot.number).padStart(2, '0');
     const dateTag = slot.scheduledDate ? `_${slot.scheduledDate}` : '';
-    const base = `pub-${pubOrder}_slot-${slotNum}${dateTag}`;
+    const isCarousel = !!slot.isCarousel && (slot.carouselSlides?.length || 0) > 0;
+    const carouselTag = isCarousel ? `_carrusel-${1 + slot.carouselSlides.length}` : '';
+    const base = `pub-${pubOrder}_slot-${slotNum}${carouselTag}${dateTag}`;
     const folder = zip.folder(base);
 
-    const blob = dataUrlToBlob(slot.generatedImageBase64);
-    if (blob) {
-      const ext = extFromMime(blob.type);
-      folder.file(`${base}.${ext}`, blob);
+    // SLIDE 1 — la imagen del slot principal
+    const slide1Blob = dataUrlToBlob(slot.generatedImageBase64);
+    if (slide1Blob) {
+      const ext = extFromMime(slide1Blob.type);
+      const slide1Name = isCarousel ? `slide-01.${ext}` : `${base}.${ext}`;
+      folder.file(slide1Name, slide1Blob);
     } else {
       missing.push(slot.number);
+    }
+
+    // SLIDES 2..N del carrusel
+    if (isCarousel) {
+      const missingSlides = [];
+      slot.carouselSlides.forEach((cs, sIdx) => {
+        const slideNum = sIdx + 2; // slide 2, 3, ...
+        const slideBlob = dataUrlToBlob(cs.imageBase64);
+        if (slideBlob) {
+          const ext = extFromMime(slideBlob.type);
+          folder.file(`slide-${String(slideNum).padStart(2, '0')}.${ext}`, slideBlob);
+        } else {
+          missingSlides.push(slideNum);
+        }
+      });
+      if (missingSlides.length > 0) {
+        folder.file('_SLIDES_SIN_IMAGEN.txt',
+          `Slides sin imagen generada (armalos en CanvasStudio antes de publicar):\n` +
+          missingSlides.map(n => `- slide-${String(n).padStart(2, '0')}`).join('\n') + '\n');
+      }
+    }
+
+    // CAPTION + (si corresponde) detalle de slides del carrusel
+    let carouselDetail = '';
+    if (isCarousel) {
+      const total = 1 + slot.carouselSlides.length;
+      carouselDetail =
+        `\n--- CARRUSEL · ${total} SLIDES ---\n` +
+        `Publicar TODAS las imágenes juntas en un solo post de Instagram (modo carrusel).\n` +
+        `Orden: slide-01.png → slide-${String(total).padStart(2, '0')}.png\n\n` +
+        `SLIDE 1 — PORTADA\n  Headline: ${(slot.copy?.headline || '').replace(/\n/g, ' / ')}\n` +
+        slot.carouselSlides.map((cs, sIdx) => {
+          const n = sIdx + 2;
+          return `\nSLIDE ${n}\n  Headline: ${(cs.headline || '').replace(/\n/g, ' / ')}\n  Body: ${cs.body || '—'}`;
+        }).join('\n');
     }
 
     const captionTxt =
       `📤 ORDEN DE PUBLICACIÓN: ${idx + 1} de ${slotsForPublication.length}\n` +
       `   (${idx === 0 ? 'PUBLICAR PRIMERO' : idx === slotsForPublication.length - 1 ? 'PUBLICAR ÚLTIMO — queda arriba-izquierda en la grilla' : `publicar después de pub-${String(idx).padStart(2, '0')}`})\n\n` +
-      `Slot ${slot.number}/9 — ${FORMAT_LABEL[slot.format] || 'Post'}\n` +
+      `Slot ${slot.number}/9 — ${isCarousel ? `Carrusel · ${1 + slot.carouselSlides.length} slides` : (FORMAT_LABEL[slot.format] || 'Post')}\n` +
       `Fecha programada: ${slot.scheduledDate || 'sin fecha'}\n` +
       `Lenguaje visual: ${LANG_LABEL[slot.visualLanguage] || slot.visualLanguage}\n` +
-      `\n--- HEADLINE (sobre la imagen) ---\n${slot.copy?.headline || ''}\n` +
+      `\n--- HEADLINE PORTADA (slide 1) ---\n${slot.copy?.headline || ''}\n` +
       `\n--- CAPTION (pegar al publicar) ---\n${slot.copy?.caption || ''}\n` +
+      carouselDetail +
       (slot.format === 'reel' && slot.reelExtras
         ? `\n--- GUION REEL ---\n${slot.reelExtras.script || ''}\n\n--- CTA REEL ---\n${slot.reelExtras.cta || ''}\n`
         : '');

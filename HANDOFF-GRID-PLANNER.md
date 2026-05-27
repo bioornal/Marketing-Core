@@ -413,3 +413,170 @@ Sesión incluyó assessment del IG real `@selvadigital_creaciones`:
 - Considerar agregar 1-2 patrones más a `GRID_PATTERNS` cuando se identifique otra estructura útil (por ahora 5 cubren bien el espacio).
 - Probar el sistema de rotación con marcas que generen muchas series en el tiempo (¿hace falta tracking de "edad" del patrón usado para priorizar el más viejo cuando se agotan los 5? Hoy simplemente vuelve al primero del array).
 - Foto de perfil de Selva Digital: pendiente de regenerar con uno de los 3 prompts entregados.
+
+---
+
+## Sesión 4 — Carruseles, CTAs, ángulos persuasivos y fixes de layout (2026-05-27)
+
+Sesión grande. Cuatro features nuevas + dos bugfixes de layout. Disparada por una conversación de social media strategy donde el user pidió cubrir carruseles (recomendados 50% del feed para B2B PyMEs), CTAs estructurados, y frameworks modernos de copywriting que faltaban en la IA del planner.
+
+### 1. Hashtags — desactivados en TODA la app
+
+Diagnóstico inicial: el wizard de posts individuales pedía explícitamente "copy persuasivo con emojis y hashtags adecuados" y forzaba `@mention` a la propia marca. El planner de serie no decía nada — la IA improvisaba.
+
+Cambios:
+- [App.jsx:572](src/App.jsx:572) — reemplacé la instrucción del CAPTION del wizard. Ahora prohíbe hashtags explícitamente con razón ("no aportan alcance orgánico en IG 2026") + prohíbe `@mention` forzada.
+- [StepCopy.jsx:153](src/components/wizard/StepCopy.jsx:153) — hint actualizado.
+- [seriesPrompts.js](src/services/seriesPrompts.js) `buildCopyPrompt` — agregada regla "PROHIBIDO ABSOLUTO: hashtags. NI UNO. Cero '#'".
+- [seriesAutoPlanner.js](src/services/seriesAutoPlanner.js) `buildBatchPrompt` — misma regla.
+
+**Política definitiva 2026:** 0 hashtags en caption. Si el user quiere hashtags, va al primer comentario manualmente.
+
+### 2. Feature: CARRUSELES en el planner de grilla
+
+Discutido con el user que los carruseles son críticos para una cuenta B2B servicios como Selva Digital (recomendado 50% del feed: 2/semana). El planner sólo soportaba posts únicos. Lo extendí end-to-end.
+
+**Decisión arquitectónica:** slide 1 sigue siendo `slot.generatedImageBase64` (la portada visible en la grilla 3×3). Los slides 2..N viven en `slot.carouselSlides[]`. La IA escribe el COPY de los slides extras (headline + body por slide) pero NO genera imágenes — FLUX/Schnell es malo para texto, por eso cada slide se compone manualmente en CanvasStudio. **Decisión clave que tomó el user.**
+
+Modelo (`src/services/seriesPlanner.js`):
+```ts
+type Slot = {
+  ...existing,
+  isCarousel: boolean,         // default false
+  carouselSlides: CarouselSlide[]  // length N-1, slides 2..N
+}
+type CarouselSlide = {
+  slideNumber: number,         // 2, 3, ..., N
+  headline: string,
+  body: string,
+  imageBase64: string | null,
+  canvasState: object | null,  // persistencia Canvas
+  ctaPresetId: string | null   // si se aplicó un CTA preset
+}
+```
+
+Helpers nuevos en `useSeries.js`: `toggleCarousel`, `setCarouselSlideCount(2-10)`, `updateCarouselSlide`.
+
+IA copy (`seriesAutoPlanner.js`): nueva función exportada `generateCarouselSlides({slot, brand, series, count})`. Toma la portada (headline + caption del slot principal) como ancla y escribe N-1 slides con estructura:
+- Slide 2 = desarrollo 1 (abre el argumento)
+- Slides intermedios = una idea nueva por slide, progresión clara
+- Slide N-1 = pico de tensión (la idea más fuerte)
+- Slide N = CIERRE (CTA si es slot 9, reflexión editorial si no)
+
+**UX importante:** la activación del carrusel (`toggleCarousel`) dispara la IA AUTOMÁTICAMENTE en el mismo gesto. Exige headline de portada antes. El user no tiene que apretar dos botones — un click activa + redacta.
+
+UI (`SeriesSlotEditor.jsx`):
+- Card "Formato del post · Carrusel" con toggle + select de cantidad (3-10).
+- Botón "IA arma copy de slides" para regenerar.
+- Mini-editor por slide con preview, headline/body editables, botón "Componer en Canvas" / "Editar en Canvas".
+- El último slide tiene borde verde + label "· CIERRE".
+
+Badge en grilla (`GridCell.jsx` + `ui.css`): icono `ph-cards-three` + "1/N" en color de marca, sólo cuando `isCarousel`.
+
+CanvasStudio integration (`App.jsx`): `onOpenCanvasStudio` ahora acepta `slideIdx` opcional. Si viene, levanta `canvasState` + headline del slide específico (no del slot principal). Al aplicar guarda en `slot.carouselSlides[idx]` vía nuevo callback `applySlideUpdate` que SeriesPlanner construye.
+
+Export ZIP (`seriesExport.js`): si `slot.isCarousel`, exporta `slide-01.png ... slide-NN.png` dentro de la carpeta del slot + caption extendido con headline/body de cada slide + flag `_SLIDES_SIN_IMAGEN.txt` si faltan algunas. El nombre de la carpeta incluye `_carrusel-N` cuando aplica.
+
+### 3. Feature: CTA presets brand-aware con auto-inyección en caption
+
+Nuevo servicio [src/services/ctaPresets.js](src/services/ctaPresets.js). 24 presets agrupados en 4 categorías:
+
+| Categoría | Presets |
+|---|---|
+| **Venta directa** (10) | WhatsApp directo, WhatsApp con mensaje prellenado, Link en bio, Diagnóstico gratis, Presupuesto sin compromiso, Cupos limitados, Promo/descuento, Agendá llamada, DM con palabra clave, Pedime el precio |
+| **Conversación** (6) | Pregunta abierta, Pregunta binaria, Comentá con emoji, Etiquetá a alguien, Guardá para después, Mandalo por DM |
+| **Cierre editorial** (5) | Si llegaste hasta acá, Reflexión filosa, Resumen en una línea, Volvé al slide 1, Continúa próximo post |
+| **Crecimiento** (4) | Seguime para más, Compartilo en story, Activá notificaciones, Suscribite al newsletter |
+
+Cada preset usa datos REALES de la marca: `brand.contact.whatsapp` se normaliza a `wa.me/<digits>`, `brand.seriesDefaults.handle`, `brand.website`. WhatsApp con mensaje prellenado construye URL `wa.me/<digits>?text=<urlencoded>`.
+
+**Decisión importante:** TODOS los CTAs disponibles en TODOS los slots (no gating por slot 9). La regla editorial "marca como autora" la sostiene el user, no la app. La primera versión gateaba sales-CTAs a slot 9 y el user pidió abrir todo (correctamente — el user es el editor, no el algoritmo).
+
+UI (`SeriesSlotEditor.jsx`): selector por slide del carrusel usando `<optgroup>` para distinguir visualmente las 4 categorías. En el ÚLTIMO slide el field se llama "⚡ CTA del cierre" con borde verde + fondo accent fade. Debajo del select aparece la descripción del preset elegido en cursiva.
+
+**Auto-inyección en caption del post:** cuando se aplica un CTA en el ÚLTIMO slide del carrusel, además de llenar headline/body del slide, ANEXA una línea limpia al final del caption del post (`slot.copy.caption`) con formato `→ {headline-limpio}. {body}`. Si el user cambia de CTA después, detecta la línea vieja (guardada en `slot.ctaCaptionLine`), la reemplaza por la nueva, sin acumular. La línea queda con `\n\n` de separación para que se vea como párrafo de cierre.
+
+Slides intermedios también pueden tener CTA pero NO modifican el caption (sólo el último cierra el post).
+
+### 4. Feature: ÁNGULOS PERSUASIVOS modernos
+
+El user notó que el planner generaba copy genérico porque la IA usaba SOLO el arco narrativo (observación/oficio/momento humano) + voz de marca, sin frameworks de copywriting. El wizard de posts individuales sí tenía angles (aida/pas/bab/storytelling/...) pero el planner no.
+
+Nueva librería [src/services/copyAngles.js](src/services/copyAngles.js) con 16 ángulos en 4 grupos:
+
+**Frameworks clásicos (5):** AIDA, PAS, BAB, FAB, 4Ps.
+**Hooks de contenido (6):** Hot take/contrarian, Cost reveal, Lista de errores, Mythbuster, Sistema paso a paso, Comparación.
+**Voz/Tono (3):** Voz de operador, Antimarketing, Autoridad de campo.
+**Patrones modernos (2):** Hiper-especificidad, Identity callout.
+
+Cada ángulo expone un campo `promptInstruction` que es un BLOQUE DIRECTIVO EN ESPAÑOL con reglas concretas, ejemplos prohibidos/permitidos, y distribución sugerida en los 9 slots. Ejemplo del ángulo "Voz de operador": prohíbe explícitamente palabras como "estrategia/funnel/conversión/engagement/stack/agéntico/Core Web Vitals" y obliga a usar lenguaje de operario.
+
+Helper `buildAnglePromptBlock(copyAngleId)` devuelve el bloque listo para inyectar (o string vacío si no hay ángulo). Se inyecta en los 3 lugares donde la IA escribe copy:
+1. `buildBatchPrompt` (auto-planner de los 9 slots).
+2. `buildCopyPrompt` (regeneración por slot).
+3. `generateCarouselSlides` (slides 2..N del carrusel).
+
+Modelo: `series.copyAngle: string | null` (default null = editorial estándar, compatible con series existentes).
+
+UI: selector agrupado en el modal de "Nueva Serie", justo arriba del callout del patrón de grilla. Al elegir, aparece panel verde con descripción + ejemplo concreto. Si no se elige nada (default), la IA usa solo el arco + voz de marca como antes.
+
+### 5. Bugfix layout grilla — conflicto de clases CSS
+
+Bug visible: la grilla 3×3 mostraba el texto/badge de cada celda derramándose visualmente sobre la celda de abajo. Causa: en [SeriesPlanner.jsx](src/components/SeriesPlanner.jsx) el contenedor tenía DOS clases con reglas que se peleaban:
+- `series-grid-container` ([series.css:234](src/styles/series.css:234)) forzaba `aspect-ratio: 1/1` + `grid-template-rows: repeat(3, 1fr)` + `overflow: hidden`.
+- `sc-series-grid` ([series-shell.css:35](src/styles/series-shell.css:35)) solo definía 3 columnas, sin aspect-ratio.
+
+El conflicto: cada celda quiere `aspect-ratio: 4/5` (vertical IG) pero el row asignado en el container cuadrado era de altura `container_height/3` — más corto que la celda — y `overflow: hidden` recortaba lo que sobraba.
+
+Fix: removí `series-grid-container` del JSX, migré los estilos visuales útiles (background negro, padding, borde, sombra) a `.sc-series-grid` SIN el aspect-ratio/grid-template-rows/overflow. Ahora el contenedor fluye según las celdas.
+
+### 6. Bugfix dropdown `<option>` ilegible en tema oscuro
+
+Bug: cuando se abría cualquier `<select className="cs-brand-select">`, el browser pintaba las opciones con colores del SO (fondo claro sobre tema oscuro), texto borroso, selección en azul brillante del sistema.
+
+Fix en [shell.css:99-118](src/styles/shell.css:99): agregué reglas para `.cs-brand-select option { background: #0A0B0D; color: #E8ECF2 }` y para `:checked / :hover / :focus { background: var(--accent); color: #0A0B0D }`. Chrome y Firefox respetan estos estilos en `<option>` (Safari los ignora parcialmente, ese caso queda como está).
+
+Aplica a TODOS los selects que usan `.cs-brand-select` — patrón de grilla, lenguaje visual, slides del carrusel, CTAs, ángulos.
+
+### Archivos tocados en esta sesión
+
+**Nuevos:**
+- [src/services/ctaPresets.js](src/services/ctaPresets.js) — 24 CTAs en 4 grupos + helpers.
+- [src/services/copyAngles.js](src/services/copyAngles.js) — 16 ángulos en 4 grupos + `buildAnglePromptBlock`.
+
+**Modificados:**
+- [src/App.jsx](src/App.jsx) — prompt del wizard sin hashtags · `onOpenCanvasStudio` acepta `slideIdx`.
+- [src/components/wizard/StepCopy.jsx](src/components/wizard/StepCopy.jsx) — hint sin hashtags.
+- [src/components/SeriesPlanner.jsx](src/components/SeriesPlanner.jsx) — modal con selector de ángulo · `onOpenCanvasStudio` pass-through con `slideIdx` · clase del contenedor de grilla limpia.
+- [src/components/SeriesSlotEditor.jsx](src/components/SeriesSlotEditor.jsx) — toda la UI de carrusel + selector de CTA por slide + auto-inyección al caption + auto-trigger de IA al activar.
+- [src/components/SeriesGridCell.jsx](src/components/SeriesGridCell.jsx) — pasa `carouselCount`.
+- [src/components/ui/GridCell.jsx](src/components/ui/GridCell.jsx) — badge `--carousel`.
+- [src/services/seriesPlanner.js](src/services/seriesPlanner.js) — `scaffoldNineSlots` persiste `copyAngle` y campos de carrusel · helper `createEmptyCarouselSlide`.
+- [src/services/seriesPrompts.js](src/services/seriesPrompts.js) — caption rule "PROHIBIDO hashtags" · inyección de `angleBlock`.
+- [src/services/seriesAutoPlanner.js](src/services/seriesAutoPlanner.js) — caption rule "PROHIBIDO hashtags" · inyección de `angleBlock` en buildBatchPrompt · nueva función `generateCarouselSlides`.
+- [src/services/seriesExport.js](src/services/seriesExport.js) — ZIP soporta `slide-NN.png` + caption extendido con slides del carrusel.
+- [src/hooks/useSeries.js](src/hooks/useSeries.js) — `toggleCarousel` / `setCarouselSlideCount` / `updateCarouselSlide` · `createNewSeries` acepta `copyAngle`.
+- [src/styles/series-shell.css](src/styles/series-shell.css) — `.sc-series-grid` con look completo (padding/borde/sombra) y sin aspect-ratio.
+- [src/styles/shell.css](src/styles/shell.css) — styling de `option` para tema oscuro.
+- [src/styles/ui.css](src/styles/ui.css) — badge `--carousel`.
+
+### Decisiones clave de esta sesión (no revertir sin discutir)
+
+1. **Slides de carrusel se editan en CanvasStudio, NO en FLUX.** FLUX es malo con texto y los carruseles típicamente son tipográficos. La IA escribe el COPY, el user compone la imagen.
+
+2. **TODOS los CTAs disponibles en TODOS los slots.** No hay gating por slot 9. Confianza editorial en el user.
+
+3. **Hashtags = 0 política dura.** Tanto wizard como planner los prohíben explícitamente con razón.
+
+4. **El ángulo persuasivo es OPCIONAL.** Default `null` = editorial estándar (compat con series viejas). Si el user no elige nada, comportamiento histórico intacto.
+
+5. **Auto-trigger de IA al activar carrusel.** Un click activa + redacta. El user pidió esto explícitamente — la versión anterior requería dos clicks separados.
+
+6. **CTA del último slide se inyecta automáticamente al caption del post.** Se mantiene tracking en `slot.ctaCaptionLine` para reemplazar sin duplicar.
+
+### Pendientes que arrastra esta sesión
+
+- Quizás extender ángulos al wizard de posts individuales (hoy tiene su propia lista en App.jsx hardcoded). Unificar ambos sistemas en un futuro.
+- Considerar override de ángulo por slot (hoy es global a la serie). Útil para series largas donde un slot puntual merece otro tono.
+- El campo `body` de los slides del carrusel sólo se renderiza en el caption del ZIP, NO sobre la imagen. Si en algún momento se quiere bilínea (headline grande + body chico) habría que crear un layout nuevo en `composer.js`.
+- Verificar que el ángulo "Antimarketing" no se confunda con la voz default de Selva (ya bastante coloquial). Probablemente cuando ambos están activos hay overlap — testear y refinar el promptInstruction si hace falta.

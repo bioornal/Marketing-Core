@@ -11,6 +11,7 @@ import { Button, Card, Disclosure, Field, SegmentedControl, TextField } from './
 import { exportSeriesToICS, exportSeriesToCSV, exportSeriesAsZip } from '../services/seriesExport';
 import { GRID_PATTERNS, selectNextPattern } from '../services/seriesPlanner';
 import { planFullSeriesWithAI, generateTopicIdeas } from '../services/seriesAutoPlanner';
+import { getCopyAnglesGrouped, getCopyAngleById } from '../services/copyAngles';
 
 export default function SeriesPlanner({
   activeBrand,
@@ -30,7 +31,7 @@ export default function SeriesPlanner({
 }) {
   const { seriesList, createNewSeries, deleteSeries } = useSeriesList();
   const [activeSeriesId, selectActiveSeries] = useActiveSeries();
-  const { series, loading, updateSlot, bulkUpdateSlots, setAnchorImage, approveAllSlots, swapGridPattern, saveSeries } = useSeries(activeSeriesId);
+  const { series, loading, updateSlot, bulkUpdateSlots, setAnchorImage, approveAllSlots, swapGridPattern, saveSeries, toggleCarousel, setCarouselSlideCount, updateCarouselSlide } = useSeries(activeSeriesId);
 
   const [activeSlotNumber, setActiveSlotNumber] = useState(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -46,6 +47,7 @@ export default function SeriesPlanner({
   const [newBrandId, setNewBrandId] = useState(activeBrand?.id || 'selva-digital');
   const [newStartDate, setNewStartDate] = useState(new Date().toISOString().slice(0, 10));
   const [selectedDays, setSelectedDays] = useState([1, 3, 5]);
+  const [newCopyAngle, setNewCopyAngle] = useState('');  // '' = editorial estándar (sin ángulo)
 
   // Disclosure open states (persisted via localStorage en Fase 8)
   const [strategyOpen, setStrategyOpen] = useState(false);
@@ -97,6 +99,7 @@ export default function SeriesPlanner({
       startDate: newStartDate,
       cadence,
       brand: allBrands[newBrandId],
+      copyAngle: newCopyAngle || null,
     });
     selectActiveSeries(newS.id);
     setActiveSlotNumber(null);
@@ -316,13 +319,29 @@ export default function SeriesPlanner({
           openaiKey={openaiKey}
           preferredProvider={preferredProvider}
           falaiKey={falaiKey}
-          onOpenCanvasStudio={(slot) => {
-            if (onOpenCanvasStudio) {
+          onOpenCanvasStudio={(slot, slideIdx) => {
+            if (!onOpenCanvasStudio) return;
+            // Si slideIdx es número >= 0, abrimos para un slide del carrusel.
+            // Si es null/undefined, abrimos para el slide 1 (slot principal).
+            if (typeof slideIdx === 'number' && slideIdx >= 0) {
+              const applySlideUpdate = (patch) => {
+                // patch viene con { generatedImageBase64, copy:{headline}, canvasState }
+                updateCarouselSlide(slot.number, slideIdx, {
+                  imageBase64: patch.generatedImageBase64,
+                  headline: patch.copy?.headline ?? slot.carouselSlides[slideIdx]?.headline,
+                  canvasState: patch.canvasState ?? null
+                });
+              };
+              onOpenCanvasStudio(slot, applySlideUpdate, slideIdx);
+            } else {
               onOpenCanvasStudio(slot, (patch) => updateSlot(slot.number, patch));
             }
           }}
           onClose={() => setActiveSlotNumber(null)}
           onNavigateSlot={handleNavigateSlot}
+          toggleCarousel={toggleCarousel}
+          setCarouselSlideCount={setCarouselSlideCount}
+          updateCarouselSlide={updateCarouselSlide}
         />
       );
     }
@@ -610,7 +629,7 @@ export default function SeriesPlanner({
           </div>
 
           {viewMode === 'grid' ? (
-            <div className="series-grid-container sc-series-grid">
+            <div className="sc-series-grid">
               {series.slots.map(slot => (
                 <SeriesGridCell
                   key={slot.number}
@@ -842,6 +861,40 @@ export default function SeriesPlanner({
                   );
                 })}
               </div>
+            </Field>
+
+            <Field
+              label="Ángulo persuasivo (opcional)"
+              hint="Estrategia de copy que se inyecta en TODOS los slots. Capa por encima del arco narrativo. Si no elegís ninguno, la IA usa el tono editorial estándar de la marca."
+            >
+              <select
+                className="cs-brand-select"
+                value={newCopyAngle}
+                onChange={(e) => setNewCopyAngle(e.target.value)}
+                style={{ height: 36, width: '100%' }}
+              >
+                <option value="">— Editorial estándar (sin ángulo especial) —</option>
+                {getCopyAnglesGrouped().map(group => (
+                  <optgroup key={group.id} label={group.label.toUpperCase()}>
+                    {group.angles.map(a => (
+                      <option key={a.id} value={a.id}>{a.label}</option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+              {newCopyAngle && (() => {
+                const a = getCopyAngleById(newCopyAngle);
+                return a ? (
+                  <div style={{ marginTop: 6, padding: '8px 10px', background: 'var(--accent-fade)', borderRadius: 'var(--r-sm)', border: '1px solid var(--line-accent)', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <span style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--t-body-13)', color: 'var(--ink-8)', lineHeight: 1.4 }}>
+                      {a.description}
+                    </span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono-10)', color: 'var(--accent)', fontStyle: 'italic', lineHeight: 1.4 }}>
+                      Ej: {a.example}
+                    </span>
+                  </div>
+                ) : null;
+              })()}
             </Field>
 
             {upcomingPatternForActiveBrand && (

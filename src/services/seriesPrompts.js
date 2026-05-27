@@ -3,6 +3,8 @@
  * Genera prompts altamente estructurados y contextualizados para Gemini y FLUX.
  */
 
+import { buildAnglePromptBlock } from './copyAngles';
+
 /**
  * Retorna el prompt para generar el copy de un slot específico en la serie
  */
@@ -90,7 +92,9 @@ ${slot.number === 9 ? '- NOTA CRÍTICA: Este es el slot 9 (post final de la seri
         ? "el mundo de las páginas web, los chatbots inteligentes, las apps a medida (web y Android) y los e-commerce en Argentina"
         : "el rubro/industria al que pertenece la marca");
 
-  return `Estás redactando el copy persuasivo del Slot ${slot.number}/9 de una serie editorial en Instagram.
+  const angleBlock = buildAnglePromptBlock(series?.copyAngle);
+
+  return `Estás redactando el copy persuasivo del Slot ${slot.number}/9 de una serie editorial en Instagram.${angleBlock}
 
 ═══════════════════════════════════════════════════════
 LA REGLA DE ORO — LA MARCA ES AUTORA, NO TEMA
@@ -131,6 +135,7 @@ Campos:
 4. "caption": texto largo de Instagram (300-600 caracteres).
    - ${isFinalSlot ? `Slot 9: podés cerrar mencionando @${handle} y haciendo CTA directo.` : `Slots 1-8: NO menciones @${handle} ni hagas CTA de venta. Cerrá con una pregunta, una reflexión o un dato. La marca firma con el handle en el footer de la gráfica, no en el caption.`}
    - Permitidos: emojis sobrios (✓, ✗, ·, →, ←). Prohibidos: 🚀, 💯, 🔥 y emojis marketeros saturados.
+   - PROHIBIDO ABSOLUTO: hashtags. NI UNO. Cero "#". Los hashtags ya no aportan alcance orgánico en Instagram 2026 y rompen el tono editorial premium de la serie. El caption debe quedar 100% limpio de hashtags.
    - Si el slot es Reel, orientá el caption a complementar un video corto de 15-20 segundos.
 
 JSON esperado:

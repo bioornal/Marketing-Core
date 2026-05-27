@@ -150,7 +150,7 @@ export default function StepCopy({
               style={{ minHeight: 72 }}
             />
           </Field>
-          <Field label="Caption" hint="Copy persuasivo con emojis y hashtags.">
+          <Field label="Caption" hint="Copy editorial. Sin hashtags (no aportan alcance en IG 2026).">
             <TextArea
               value={caption.replace(/<\/?[^>]+(>|$)/g, '').replace(/<br>/g, '\n')}
               onChange={(e) => setCaption(e.target.value)}

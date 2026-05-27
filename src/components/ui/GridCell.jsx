@@ -21,6 +21,7 @@ export function GridCell({
   format = 'post',     // 'post' | 'reel'
   language,
   scheduledDate,
+  carouselCount = 0,   // 0 = no carrusel · >1 = total de slides
   onClick,
   brandAccent,
   className = '',
@@ -74,6 +75,12 @@ export function GridCell({
         {format === 'reel' && (
           <span className="sc-gridcell__badge sc-gridcell__badge--reel" title="Reel">
             <i className="ph-bold ph-video-camera" aria-hidden="true" />
+          </span>
+        )}
+        {carouselCount > 1 && (
+          <span className="sc-gridcell__badge sc-gridcell__badge--carousel" title={`Carrusel · ${carouselCount} slides`}>
+            <i className="ph-bold ph-cards-three" aria-hidden="true" />
+            <span style={{ marginLeft: 3 }}>1/{carouselCount}</span>
           </span>
         )}
         {language && (

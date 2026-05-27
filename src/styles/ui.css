@@ -655,6 +655,12 @@
 .sc-gridcell__badge--num  { display: none; } /* solo visible si hay imagen */
 .sc-gridcell--has-image .sc-gridcell__badge--num { display: inline-flex; }
 .sc-gridcell__badge--reel { padding: 2px 4px; }
+.sc-gridcell__badge--carousel {
+  padding: 2px 5px;
+  background: var(--cell-accent, var(--accent));
+  color: #0A0B0D;
+  font-weight: 700;
+}
 .sc-gridcell__badge--lang { color: var(--ink-7); }
 .sc-gridcell__badge--date { margin-left: auto; color: var(--ink-7); }
 .sc-gridcell__badge--state {

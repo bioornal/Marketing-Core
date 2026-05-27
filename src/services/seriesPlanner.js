@@ -116,6 +116,20 @@ export function getPatternById(id) {
   return GRID_PATTERNS.find(p => p.id === id) || GRID_PATTERNS[0];
 }
 
+/**
+ * Crea un slide extra vacío para el carrusel (slides 2..N de un slot).
+ * Slide 1 es el slot principal (slot.generatedImageBase64) — estos son los que vienen después.
+ */
+export function createEmptyCarouselSlide(slideNumber) {
+  return {
+    slideNumber,                // 2, 3, ..., N
+    headline: "",               // texto principal de este slide
+    body: "",                   // bajada/apoyo opcional
+    imageBase64: null,          // PNG generado en CanvasStudio
+    canvasState: null           // bgOptions + text persistido para reabrir
+  };
+}
+
 // Default kickers (genéricos por arco). Cada marca puede sobreescribir vía brand.seriesDefaults.kickers
 const DEFAULT_KICKERS_BY_POSITION = {
   1: "01 ─── OBSERVACIÓN",
@@ -155,7 +169,7 @@ function getKickersForBrand(brand) {
  *                        en series anteriores. Se usa para rotar al próximo patrón
  *                        no usado y garantizar variedad entre series.
  */
-export function scaffoldNineSlots({ brandId, topic, startDate, cadence, brand, usedPatternIds = [] }) {
+export function scaffoldNineSlots({ brandId, topic, startDate, cadence, brand, usedPatternIds = [], copyAngle = null }) {
   const brandRef = brand || { id: brandId };
   const kickersMap = getKickersForBrand(brandRef);
   const footerDefault = brandRef?.seriesDefaults?.footer
@@ -222,6 +236,11 @@ export function scaffoldNineSlots({ brandId, topic, startDate, cadence, brand, u
         cta: reelCta
       } : null,
       generatedImageBase64: null,
+      // Carrusel: slot.generatedImageBase64 sigue siendo SLIDE 1 (portada visible en grilla).
+      // Si isCarousel=true, carouselSlides agrega slides 2..N. Cada slide tiene su propia copy + imagen.
+      // Las imágenes se hacen SIEMPRE en CanvasStudio (no IA), porque FLUX no renderiza texto bien.
+      isCarousel: false,
+      carouselSlides: [],
       state: 'empty',
       notes: ""
     };
@@ -238,6 +257,7 @@ export function scaffoldNineSlots({ brandId, topic, startDate, cadence, brand, u
     status: 'draft',
     gridPatternId: patternId,
     gridPatternName: patternName,
+    copyAngle: copyAngle || null,  // ID del ángulo persuasivo. Null = editorial estándar.
     slots
   };
 }

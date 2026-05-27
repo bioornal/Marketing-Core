@@ -21,11 +21,12 @@ const LANG_LABEL = {
 };
 
 export default function SeriesGridCell({ slot, active, onClick, brand }) {
-  const { number, visualLanguage, format, copy, generatedImageBase64, state, scheduledDate } = slot;
+  const { number, visualLanguage, format, copy, generatedImageBase64, state, scheduledDate, isCarousel, carouselSlides } = slot;
   const dateLabel = formatShortDateES(scheduledDate);
   const hasCopy = !!copy?.headline;
   const cellState = active ? 'editing' : (state === 'approved' ? 'approved' : (hasCopy ? 'draft' : 'empty'));
   const accent = brand?.theme?.accent;
+  const carouselCount = isCarousel ? 1 + (carouselSlides?.length || 0) : 0;
 
   return (
     <GridCell
@@ -38,6 +39,7 @@ export default function SeriesGridCell({ slot, active, onClick, brand }) {
       format={format}
       language={LANG_LABEL[visualLanguage] || visualLanguage}
       scheduledDate={dateLabel}
+      carouselCount={carouselCount}
       onClick={onClick}
       brandAccent={accent}
     />

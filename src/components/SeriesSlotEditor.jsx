@@ -4,6 +4,8 @@ import { generateTextWithGemini } from '../services/gemini';
 import { generateTextWithOpenAI } from '../services/openai';
 import { generateImageWithFalAI } from '../services/falai';
 import { buildCopyPrompt, buildVisualPrompt, buildReelPrompt } from '../services/seriesPrompts';
+import { generateCarouselSlides } from '../services/seriesAutoPlanner';
+import { getCtaPresets, getCtaPresetsGrouped } from '../services/ctaPresets';
 
 const LANG_OPTIONS = [
   { value: 'typography',           label: 'Texto puro' },
@@ -27,9 +29,13 @@ export default function SeriesSlotEditor({
   onOpenCanvasStudio,
   onClose,
   onNavigateSlot,
+  toggleCarousel,
+  setCarouselSlideCount,
+  updateCarouselSlide,
 }) {
   const [isGeneratingCopy, setIsGeneratingCopy] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [isGeneratingCarousel, setIsGeneratingCarousel] = useState(false);
   const [feedback, setFeedback] = useState(null);
 
   const [kicker, setKicker] = useState('');
@@ -315,6 +321,170 @@ export default function SeriesSlotEditor({
     }
   };
 
+  const handleToggleCarousel = async () => {
+    if (!toggleCarousel) return;
+    // Desactivar carrusel con slides existentes → confirmar
+    if (slot.isCarousel && (slot.carouselSlides?.length || 0) > 0) {
+      const confirmDisable = confirm('¿Convertir este slot de carrusel a post único? Los slides 2..N que ya hiciste se conservan en memoria por si lo reactivás, pero no se publican.');
+      if (!confirmDisable) return;
+      toggleCarousel(slot.number);
+      return;
+    }
+    // Activación fresh: exigir headline de portada
+    if (!slot.copy?.headline?.trim()) {
+      setFeedback({ type: 'error', message: 'Escribí primero el headline de la portada (slide 1). La IA lo usa como ancla del hilo conductor del carrusel.' });
+      return;
+    }
+    if (!geminiKey && !openaiKey) {
+      // Activamos igual, pero avisamos que sin IA no hay copy automático
+      toggleCarousel(slot.number);
+      setFeedback({ type: 'warning', message: 'Carrusel activado. Configurá Gemini/OpenAI en Ajustes para que la IA arme el copy de los slides 2..N automáticamente.' });
+      return;
+    }
+    // Activamos + disparamos generación IA en el mismo gesto
+    toggleCarousel(slot.number);
+    await handleGenerateCarouselCopy({ totalSlides: 3, force: true });
+  };
+
+  const handleSlideCountChange = (e) => {
+    const next = parseInt(e.target.value, 10);
+    if (!setCarouselSlideCount || Number.isNaN(next)) return;
+    const current = 1 + (slot.carouselSlides?.length || 0);
+    if (next < current) {
+      const willLose = current - next;
+      if (!confirm(`Esto va a borrar los últimos ${willLose} slide${willLose > 1 ? 's' : ''} del carrusel. ¿Seguir?`)) return;
+    }
+    setCarouselSlideCount(slot.number, next);
+    // Si se agrandó el carrusel, pedimos a la IA copy para los slides faltantes.
+    if (next > current && (geminiKey || openaiKey) && slot.copy?.headline?.trim()) {
+      handleGenerateCarouselCopy({ totalSlides: next, force: true, onlyFillEmpty: true });
+    }
+  };
+
+  const handleGenerateCarouselCopy = async ({ totalSlides: explicitCount, force = false, onlyFillEmpty = false } = {}) => {
+    if (!generateCarouselSlides) return;
+    if (!geminiKey && !openaiKey) {
+      setFeedback({ type: 'error', message: 'Configurá tu Gemini Key u OpenAI Key en los ajustes.' });
+      return;
+    }
+    if (!slot.copy?.headline?.trim()) {
+      setFeedback({ type: 'error', message: 'Escribí primero el headline de la portada (slide 1). La IA lo usa para mantener coherencia.' });
+      return;
+    }
+    setIsGeneratingCarousel(true);
+    setFeedback(null);
+    try {
+      // Si el caller pasó un count explícito (ej. recién toggleamos y slot.carouselSlides aún
+      // refleja el estado anterior), lo usamos. Si no, derivamos del slot actual.
+      const totalSlides = explicitCount ?? (1 + (slot.carouselSlides?.length || 2));
+      const slides = await generateCarouselSlides({
+        slot, brand, series, count: totalSlides,
+        geminiKey, openaiKey, preferredProvider
+      });
+      // Merge: preservar imageBase64/canvasState siempre.
+      // Si onlyFillEmpty, sólo sobreescribir headline/body de slides cuyo headline está vacío.
+      const merged = (slot.carouselSlides || []).map((existing, idx) => {
+        const fromAi = slides[idx];
+        if (!fromAi) return existing;
+        const keepExistingCopy = onlyFillEmpty && (existing.headline || '').trim().length > 0;
+        return {
+          ...existing,
+          slideNumber: existing.slideNumber || idx + 2,
+          headline: keepExistingCopy ? existing.headline : fromAi.headline,
+          body: keepExistingCopy ? existing.body : fromAi.body
+        };
+      });
+      // Si la IA devolvió más slides de los que había (típico cuando el carrusel
+      // se activa por primera vez y aún no hay slides en el slot), agregamos los faltantes.
+      while (merged.length < slides.length) {
+        const idx = merged.length;
+        const fromAi = slides[idx];
+        merged.push({
+          slideNumber: idx + 2,
+          headline: fromAi.headline,
+          body: fromAi.body,
+          imageBase64: null,
+          canvasState: null
+        });
+      }
+      updateSlot(slot.number, { carouselSlides: merged, isCarousel: true });
+      setFeedback({ type: 'success', message: `Copy de ${slides.length} slide${slides.length > 1 ? 's' : ''} generado. Las imágenes las armás en Canvas.` });
+    } catch (err) {
+      console.error(err);
+      setFeedback({ type: 'error', message: `Falla generando carrusel: ${err.message}` });
+    } finally {
+      setIsGeneratingCarousel(false);
+    }
+  };
+
+  const handleSlideFieldChange = (slideIdx, field, value) => {
+    if (!updateCarouselSlide) return;
+    updateCarouselSlide(slot.number, slideIdx, { [field]: value });
+  };
+
+  const handleRemoveSlideImage = (slideIdx) => {
+    if (!updateCarouselSlide) return;
+    if (!confirm('¿Quitar la imagen de este slide?')) return;
+    updateCarouselSlide(slot.number, slideIdx, { imageBase64: null, canvasState: null });
+  };
+
+  const handleApplyCtaToSlide = (slideIdx, presetId) => {
+    if (!presetId) return;
+    const presets = getCtaPresets({ brand, slot });
+    const preset = presets.find(p => p.id === presetId);
+    if (!preset) return;
+
+    // Construimos el patch en una sola operación para evitar dos updateSlot
+    // consecutivos (React batchea state y el segundo leería series stale).
+    const nextSlides = (slot.carouselSlides || []).map((s, i) =>
+      i === slideIdx
+        ? { ...s, headline: preset.headline, body: preset.body, ctaPresetId: presetId }
+        : s
+    );
+    const patch = { carouselSlides: nextSlides };
+
+    // Sólo el ÚLTIMO slide del carrusel inyecta CTA al caption del post.
+    // Es la pieza visual de cierre — su CTA tiene que repetirse en el caption
+    // de IG (lo que aparece debajo del post al expandir).
+    const isLastSlide = slideIdx === (slot.carouselSlides.length - 1);
+    if (isLastSlide) {
+      // Limpiamos el headline (saltos de línea, flechas duplicadas) para que lea
+      // natural dentro del caption corrido.
+      const cleanHeadline = preset.headline.replace(/\n/g, ' ').replace(/→/g, '').replace(/\s+/g, ' ').trim();
+      // Línea de CTA final que se mete en el caption. La marcamos con "→ " para
+      // poder identificarla y reemplazarla si el user cambia de preset.
+      const newCtaLine = `→ ${cleanHeadline}. ${preset.body}`;
+
+      let nextCaption = caption || slot.copy?.caption || '';
+      // Si había un CTA previo, lo borramos antes de inyectar el nuevo.
+      const prev = slot.ctaCaptionLine;
+      if (prev) {
+        nextCaption = nextCaption
+          .replace(`\n\n${prev}`, '')
+          .replace(`\n${prev}`, '')
+          .replace(prev, '');
+      }
+      // Anexamos el CTA al final del caption con doble salto de línea (si hay texto previo).
+      const trimmed = nextCaption.trimEnd();
+      nextCaption = trimmed.length > 0 ? `${trimmed}\n\n${newCtaLine}` : newCtaLine;
+
+      patch.copy = { ...slot.copy, caption: nextCaption };
+      patch.ctaCaptionLine = newCtaLine;
+      setCaption(nextCaption);
+      setFeedback({
+        type: 'success',
+        message: `CTA "${preset.label}" aplicado al slide ${slideIdx + 2} y agregado al caption del post.`
+      });
+    } else {
+      setFeedback({
+        type: 'success',
+        message: `CTA "${preset.label}" aplicado al slide ${slideIdx + 2}. El caption del post no se modificó (sólo el último slide lo actualiza).`
+      });
+    }
+
+    updateSlot(slot.number, patch);
+  };
+
   const isBwPhoto = ['bw_lifestyle', 'bw_lifestyle_emerald', 'mockup'].includes(slot.visualLanguage);
   const isApproved = slot.state === 'approved';
 
@@ -594,6 +764,174 @@ export default function SeriesSlotEditor({
             </div>
           </Card>
         )}
+
+        {/* CARRUSEL — cualquier slot puede convertirse en post de varios slides */}
+        <Card raised style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-3)', borderColor: slot.isCarousel ? 'var(--line-accent)' : undefined }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--s-2)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono-10)', letterSpacing: 'var(--track-mono)', textTransform: 'uppercase', color: slot.isCarousel ? 'var(--accent)' : 'var(--ink-6)' }}>
+                Formato del post · Carrusel
+              </span>
+              <span style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--t-body-13)', color: 'var(--ink-7)', lineHeight: 1.4 }}>
+                {slot.isCarousel
+                  ? `Este slot es un carrusel de ${1 + (slot.carouselSlides?.length || 0)} slides. Slide 1 = portada (la imagen del slot). Slides 2..N se editan abajo.`
+                  : 'Single post. Activá carrusel para sumar slides de desarrollo (recomendado para slots de data, casos o argumentos profundos).'}
+              </span>
+            </div>
+            <Button
+              size="sm"
+              variant={slot.isCarousel ? 'primary' : 'ghost'}
+              onClick={handleToggleCarousel}
+              title={slot.isCarousel ? 'Volver a post único' : 'Activar carrusel'}
+            >
+              <i className={`ph-bold ${slot.isCarousel ? 'ph-cards-three' : 'ph-cards'}`} aria-hidden="true" />
+              <span>{slot.isCarousel ? 'Carrusel ON' : 'Activar'}</span>
+            </Button>
+          </div>
+
+          {slot.isCarousel && (
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--s-3)', alignItems: 'end' }}>
+                <Field label="Total de slides" hint="Incluye el slide 1 (portada). Recomendado: 5-7.">
+                  <select
+                    className="cs-brand-select"
+                    value={1 + (slot.carouselSlides?.length || 0)}
+                    onChange={handleSlideCountChange}
+                    style={{ height: 36, width: '100%' }}
+                  >
+                    {[3, 4, 5, 6, 7, 8, 9, 10].map(n => (
+                      <option key={n} value={n}>{n} slides</option>
+                    ))}
+                  </select>
+                </Field>
+                <Button
+                  variant="ghost"
+                  onClick={handleGenerateCarouselCopy}
+                  disabled={isGeneratingCarousel}
+                  loading={isGeneratingCarousel}
+                  title="La IA arma el copy de los slides 2..N usando la portada como ancla"
+                >
+                  {!isGeneratingCarousel && <i className="ph-bold ph-sparkle" aria-hidden="true" />}
+                  <span>{isGeneratingCarousel ? 'Redactando…' : 'IA arma copy de slides'}</span>
+                </Button>
+              </div>
+
+              {/* Slide 1 reference (read-only summary) */}
+              <div style={{ padding: 'var(--s-2) var(--s-3)', background: 'var(--ink-0)', borderRadius: 'var(--r-sm)', border: '1px dashed var(--line)', display: 'flex', gap: 'var(--s-2)', alignItems: 'flex-start' }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono-10)', color: 'var(--accent)', marginTop: 2 }}>SLIDE 1</span>
+                <span style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--t-body-13)', color: 'var(--ink-7)', lineHeight: 1.4 }}>
+                  Portada · usa el headline e imagen del slot principal (arriba). Editalos en los campos de Headline / Componer gráfica.
+                </span>
+              </div>
+
+              {/* Slides 2..N */}
+              {(slot.carouselSlides || []).map((cs, idx) => {
+                const slideNum = idx + 2;
+                const isLast = idx === (slot.carouselSlides.length - 1);
+                const ctaPresets = getCtaPresets({ brand, slot });
+                const ctaGroups = getCtaPresetsGrouped({ brand, slot });
+                const activeCtaId = cs.ctaPresetId || '';
+                return (
+                  <div key={idx} style={{ padding: 'var(--s-3)', background: 'var(--ink-0)', borderRadius: 'var(--r-sm)', border: isLast ? '1px solid var(--line-accent)' : '1px solid var(--line)', display: 'flex', flexDirection: 'column', gap: 'var(--s-2)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--t-mono-10)', letterSpacing: 'var(--track-mono)', color: 'var(--accent)', textTransform: 'uppercase' }}>
+                        SLIDE {slideNum}{isLast ? ' · CIERRE' : ''}
+                      </span>
+                      <div style={{ display: 'flex', gap: 'var(--s-1)' }}>
+                        {cs.imageBase64 && (
+                          <button
+                            type="button"
+                            className="cs-icon-btn"
+                            onClick={() => handleRemoveSlideImage(idx)}
+                            title="Quitar imagen del slide"
+                            style={{ color: 'var(--danger, #FF6B6B)' }}
+                          >
+                            <i className="ph-bold ph-trash" aria-hidden="true" />
+                          </button>
+                        )}
+                        <Button
+                          size="sm"
+                          variant={cs.imageBase64 ? 'ghost' : 'primary'}
+                          onClick={() => onOpenCanvasStudio?.(slot, idx)}
+                        >
+                          <i className="ph-bold ph-paint-brush-broad" aria-hidden="true" />
+                          <span>{cs.imageBase64 ? 'Editar en Canvas' : 'Componer en Canvas'}</span>
+                        </Button>
+                      </div>
+                    </div>
+
+                    {cs.imageBase64 && (
+                      <div style={{ width: '100%', borderRadius: 'var(--r-sm)', overflow: 'hidden', border: '1px solid var(--line)' }}>
+                        <img src={cs.imageBase64} alt={`Slide ${slideNum}`} style={{ width: '100%', display: 'block' }} />
+                      </div>
+                    )}
+
+                    {/* CTA preset selector — protagónico en el último slide */}
+                    <Field
+                      label={isLast ? '⚡ CTA del cierre' : 'Preset de CTA'}
+                      hint={isLast
+                        ? (slot.number === 9
+                            ? 'Slot 9 + último slide: acá podés vender directo. WhatsApp suele rendir más en PyMEs AR.'
+                            : 'Cierre del carrusel. Sin venta dura (no es slot 9). Soft CTAs empujan saves/shares — la señal que más mueve el algoritmo en 2026.')
+                        : 'Opcional. Inyecta headline+body de una plantilla.'}
+                    >
+                      <select
+                        className="cs-brand-select"
+                        value={activeCtaId}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (!val) return;
+                          handleApplyCtaToSlide(idx, val);
+                        }}
+                        style={{
+                          height: 36,
+                          width: '100%',
+                          borderColor: isLast ? 'var(--line-accent)' : undefined,
+                          background: isLast ? 'var(--accent-fade)' : undefined
+                        }}
+                      >
+                        <option value="">— Elegí un CTA —</option>
+                        {ctaGroups.map(group => (
+                          <optgroup key={group.id} label={group.label.toUpperCase()}>
+                            {group.presets.map(p => (
+                              <option key={p.id} value={p.id}>{p.label}</option>
+                            ))}
+                          </optgroup>
+                        ))}
+                      </select>
+                      {activeCtaId && (
+                        <span style={{ display: 'block', marginTop: 4, fontFamily: 'var(--font-display)', fontSize: 'var(--t-body-12)', color: 'var(--ink-6)', lineHeight: 1.4, fontStyle: 'italic' }}>
+                          {ctaPresets.find(p => p.id === activeCtaId)?.description}
+                        </span>
+                      )}
+                    </Field>
+
+                    <Field label={`Headline slide ${slideNum}`} hint="6-12 palabras · última palabra en acento · separá líneas con Enter.">
+                      <TextArea
+                        value={cs.headline || ''}
+                        onChange={(e) => handleSlideFieldChange(idx, 'headline', e.target.value)}
+                        placeholder={isLast ? 'CTA o cierre editorial...' : 'Idea fuerte del slide...'}
+                        style={{ minHeight: 70, fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 500, lineHeight: 1.25 }}
+                        maxLength={160}
+                        showCounter
+                      />
+                    </Field>
+                    <Field label="Bajada / body" hint="Opcional. Máx ~30 palabras de apoyo.">
+                      <TextArea
+                        value={cs.body || ''}
+                        onChange={(e) => handleSlideFieldChange(idx, 'body', e.target.value)}
+                        placeholder="Texto chico opcional debajo del headline..."
+                        style={{ minHeight: 50 }}
+                        maxLength={220}
+                        showCounter
+                      />
+                    </Field>
+                  </div>
+                );
+              })}
+            </>
+          )}
+        </Card>
 
         <Field label="Notas de trabajo / prompt visual">
           <TextArea
