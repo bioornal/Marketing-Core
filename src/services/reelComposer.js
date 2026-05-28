@@ -44,7 +44,7 @@ export function composeReelHtml({ brand, script }) {
 
   const bumper = logo
     ? `<footer class="bumper" data-hf-start="${scenes.length * 2.5}" data-hf-duration="1.5">
-         <img src="${logo}" alt="${escapeHtml(brand?.name)}" class="logo" />
+         <img src="${escapeHtml(logo)}" alt="${escapeHtml(brand?.name)}" class="logo" />
        </footer>`
     : '';
 

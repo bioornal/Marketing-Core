@@ -47,4 +47,11 @@ describe('composeReelHtml', () => {
     const html = composeReelHtml({ brand, script });
     expect(html).toContain('https://example.com/logo.png');
   });
+
+  it('escapes a logo url that contains a double quote', () => {
+    const evil = { ...brand, theme: { ...brand.theme, logo: 'x"></div><script>alert(1)</script>' } };
+    const html = composeReelHtml({ brand: evil, script });
+    expect(html).not.toContain('"></div><script>');
+    expect(html).toContain('&lt;script&gt;');
+  });
 });

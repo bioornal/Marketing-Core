@@ -22,16 +22,24 @@ function writeReelPlugin() {
           try {
             const { dir, files } = JSON.parse(raw || '{}');
             const root = server.config.root;
+            const outputsRoot = path.resolve(root, '05_outputs');
             const targetDir = path.resolve(root, dir);
-            // Path-safety: refuse anything that escapes the project root.
-            if (!targetDir.startsWith(path.resolve(root, '05_outputs'))) {
+            // Path-safety: targetDir must be 05_outputs or a descendant of it.
+            if (targetDir !== outputsRoot && !targetDir.startsWith(outputsRoot + path.sep)) {
               res.statusCode = 400;
               res.end('Invalid target dir');
               return;
             }
             await fs.mkdir(targetDir, { recursive: true });
             for (const [name, content] of Object.entries(files || {})) {
-              await fs.writeFile(path.join(targetDir, name), content, 'utf8');
+              const filePath = path.resolve(targetDir, name);
+              // Path-safety: each file must stay inside targetDir (no ../ escapes).
+              if (!filePath.startsWith(targetDir + path.sep)) {
+                res.statusCode = 400;
+                res.end('Invalid file name');
+                return;
+              }
+              await fs.writeFile(filePath, content, 'utf8');
             }
             res.statusCode = 200;
             res.setHeader('Content-Type', 'application/json');

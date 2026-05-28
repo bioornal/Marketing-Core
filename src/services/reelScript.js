@@ -36,7 +36,17 @@ export function buildReelScriptPrompt(template, brand, persona) {
 export async function generateReelScript(template, brand, persona, geminiKey) {
   const prompt = buildReelScriptPrompt(template, brand, persona);
   const raw = await generateTextWithGemini(prompt, geminiKey, 'application/json');
-  const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+  let parsed;
+  try {
+    if (typeof raw === 'string') {
+      const cleaned = raw.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '');
+      parsed = JSON.parse(cleaned);
+    } else {
+      parsed = raw;
+    }
+  } catch {
+    throw new Error('La IA devolvió un formato inesperado. Intentá de nuevo.');
+  }
   return {
     templateId: template.id,
     scenes: Array.isArray(parsed?.scenes) ? parsed.scenes : [],
