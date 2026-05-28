@@ -130,6 +130,26 @@ MP4 resultante en la misma carpeta. La iteración se hace en conversación (edit
 **Nota:** no hay uploader dentro de la app — alcanza una convención de carpeta
 (drag & drop a `_inbox/<marca>/`). Un uploader real empujaría hacia la Opción B.
 
+### Cómo escribe la app a `05_outputs/` (resuelto)
+
+El frontend no puede escribir a disco por sí solo, pero el operador corre la app con
+`pnpm dev`, y **el dev-server de Vite ya es un proceso Node con acceso a filesystem**.
+
+- **Primario — plugin de Vite (`configureServer`):** un middleware POST dev-only
+  (`/__write-reel`) recibe el paquete del reel y lo escribe directo a
+  `05_outputs/reels/<marca>/<fecha>-<slug>/`. Síncrono y trivial: solo escribe
+  JSON/HTML/assets. Los archivos caen exactamente donde el agente los espera → hand-off
+  sin paso manual.
+- **Fallback — descarga ZIP:** reusa el patrón existente de `seriesExport.js` (JSZip).
+  La app empaqueta el reel en `.zip` para descargar y descomprimir en `05_outputs/`.
+  Para builds estáticos o cuando el plugin no esté activo.
+
+**Por qué el plugin de Vite NO es la Opción B descartada:** B era un servicio
+standalone *long-running* que **corre el render** (ffmpeg + Chromium + cola de jobs +
+progreso + manejo de crashes). Este middleware es **dev-only, síncrono y trivial** —
+solo escribe archivos a disco, no ejecuta nada. Categoría de peso distinta; consistente
+con la restricción "sin backend".
+
 ---
 
 ## 6. Brand-awareness — `src/services/reelComposer.js`
@@ -203,14 +223,14 @@ resaltado de palabras, transiciones).
 | `src/components/ReelsPanel.jsx` | Nuevo | UI del tab Reels (MVP + sub-modo edición fase 2) |
 | `src/services/reelComposer.js` | Nuevo | Compila `brand.json` + guión → `reel.html` (HyperFrames) |
 | `src/services/reelScript.js` | Nuevo | Genera guión por escena con IA (reusa contrato de `gemini.js`/`openai.js`) |
-| `src/services/reelExport.js` | Nuevo | Escribe el paquete del reel a `05_outputs/reels/...` |
+| `src/services/reelExport.js` | Nuevo | Empaqueta el reel y lo envía al plugin de Vite (primario) o lo descarga como ZIP (fallback, vía JSZip) |
 | `src/services/reelTemplates.js` | Nuevo | Define las 4 plantillas y sus estructuras de escena |
+| `vite.config.js` | Editar | Plugin `configureServer` con el middleware dev-only `/__write-reel` que escribe el paquete a `05_outputs/reels/...` |
 | `src/App.jsx` | Editar | Registrar el tab Reels (sin romper Series/Flyers/wizard) |
 | `CLAUDE.md` | Editar (al implementar) | Sección nueva "Creación de Reels" (flujo operativo) |
 
-**Nota de escritura a disco:** la app es un frontend; para escribir en `05_outputs/`
-durante `pnpm dev` se evaluará en el plan de implementación la vía concreta (descarga
-del paquete vs. helper de filesystem). Es un detalle de implementación, no de diseño.
+**Escritura a disco (resuelto, ver §5):** primario = plugin de Vite que escribe directo
+a `05_outputs/`; fallback = descarga ZIP reusando el patrón de `seriesExport.js`.
 
 ---
 
