@@ -26,6 +26,10 @@ export default function WelcomePortal({
     setActiveTab('ads');
   };
 
+  const handleOpenReels = () => {
+    setActiveTab('reels');
+  };
+
   return (
     <div className="wiz-shell" style={{ gridTemplateAreas: '"top top top" "main main main" "footer footer footer"', gridTemplateRows: '72px 1fr 64px' }}>
       {/* TOP HEADER */}
@@ -247,6 +251,63 @@ export default function WelcomePortal({
 
             <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 700, color: accent, fontFamily: 'var(--font-ui)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               <span>Crear Flyer</span>
+              <i className="ph-bold ph-arrow-right" style={{ fontSize: '14px' }}></i>
+            </div>
+          </button>
+
+          {/* Pillar 4: Reels */}
+          <button
+            type="button"
+            onClick={handleOpenReels}
+            className="wiz-card"
+            style={{
+              padding: '40px 32px',
+              gap: '20px',
+              background: 'rgba(255, 255, 255, 0.01)',
+              border: '1px solid var(--border)',
+              borderRadius: '16px',
+              textAlign: 'left',
+              transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 4px 30px rgba(0,0,0,0.2)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = accent;
+              e.currentTarget.style.transform = 'translateY(-4px)';
+              e.currentTarget.style.boxShadow = `0 20px 40px -12px rgba(0,0,0,0.6), 0 0 24px rgba(${accentRgb}, 0.06)`;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'var(--border)';
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 4px 30px rgba(0,0,0,0.2)';
+            }}
+          >
+            <div style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '12px',
+              background: `rgba(${accentRgb}, 0.06)`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: `1px solid rgba(${accentRgb}, 0.2)`
+            }}>
+              <i className="ph-bold ph-film-strip" style={{ fontSize: '24px', color: accent }}></i>
+            </div>
+
+            <div>
+              <h2 style={{ fontFamily: 'var(--font-ui)', fontSize: '20px', fontWeight: 800, color: '#FAFAFA', letterSpacing: '-0.5px', marginBottom: '8px' }}>
+                Reels
+              </h2>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: '1.6' }}>
+                Generá reels en video con la identidad de la marca: guión por escena con IA y composición HyperFrames lista para que el agente la renderice a MP4 9:16.
+              </p>
+            </div>
+
+            <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 700, color: accent, fontFamily: 'var(--font-ui)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              <span>Crear Reel</span>
               <i className="ph-bold ph-arrow-right" style={{ fontSize: '14px' }}></i>
             </div>
           </button>

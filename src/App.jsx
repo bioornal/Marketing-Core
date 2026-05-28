@@ -1764,9 +1764,16 @@ Cada objeto del array JSON debe tener la siguiente estructura exacta:
           />
       ) : activeTab === 'reels' ? (
         <ReelsPanel
+          onLogout={handleLogout}
           activeBrand={activeBrand}
-          geminiKey={geminiKey}
+          allBrands={allBrands}
+          activeBrandId={activeBrandId}
+          setActiveBrandId={setActiveBrandId}
+          activeTab={activeTab}
           setActiveTab={setActiveTab}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+          onOpenEditWizard={handleOpenEditWizard}
+          geminiKey={geminiKey}
         />
       ) : activeTab === 'ads' ? (
         <FlyerAdsPanel
