@@ -47,14 +47,22 @@ Wizard de 5 pasos por marca, dentro de [src/App.jsx](src/App.jsx):
 Pestaña **Reels** (hermana de Series/Flyers). Genera reels en video brand-aware con
 hand-off al agente (el browser no puede renderizar).
 
+**Dos fuentes de guión para un reel:**
+- **Desde la grilla de Series (preferido):** un slot con `format: 'reel'` ya tiene el copy
+  escrito (headline/caption/coverFrame/script/cta). El botón "Componer reel para render"
+  del editor de slot adapta ese contenido (`src/services/reelFromSlot.js`) → compone →
+  arma el paquete. Sin re-generar con IA.
+- **Standalone (tab Reels):** para reels sueltos fuera de una serie. La IA escribe el
+  guión por escena (`src/services/reelScript.js`, provider-aware: OpenAI por defecto con
+  fallback a Gemini) desde una plantilla (`src/services/reelTemplates.js`).
+
 **Flujo (reel gráfico — HyperFrames):**
-1. Tab Reels → marca activa + plantilla (`src/services/reelTemplates.js`).
-2. IA escribe el guión por escena (`src/services/reelScript.js`).
-3. La app compila `reel.html` brand-aware (`src/services/reelComposer.js`) y arma el
+1. Origen: slot de Series (botón "Componer reel") **o** tab Reels (marca + plantilla).
+2. La app compila `reel.html` brand-aware (`src/services/reelComposer.js`) y arma el
    paquete (`src/services/reelExport.js`).
-4. "Preparar para render" escribe `05_outputs/reels/<marca>/<fecha>-<slug>/` vía el
-   middleware dev de Vite (fallback: descarga ZIP).
-5. Pedirle al agente: *"Renderizá el reel `<carpeta>`"* → corre `npx hyperframes render`.
+3. Se escribe en `05_outputs/reels/<marca>/<fecha>-<slug>/` vía el middleware dev de Vite
+   (fallback: descarga ZIP).
+4. Pedirle al agente: *"Renderizá el reel `<carpeta>`"* → corre `npx hyperframes render`.
 
 **Fase 2 (editar video crudo — video-use):** la app generará un `edit-profile.json`; el
 video se deja en `05_outputs/reels/_inbox/<marca>/`; el agente transcribe, propone

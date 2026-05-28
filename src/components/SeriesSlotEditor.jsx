@@ -6,6 +6,9 @@ import { generateImageWithFalAI } from '../services/falai';
 import { buildCopyPrompt, buildVisualPrompt, buildReelPrompt } from '../services/seriesPrompts';
 import { generateCarouselSlides } from '../services/seriesAutoPlanner';
 import { getCtaPresets, getCtaPresetsGrouped } from '../services/ctaPresets';
+import { slotToReelScript } from '../services/reelFromSlot';
+import { composeReelHtml } from '../services/reelComposer';
+import { buildReelPackage, writeReelPackage, downloadReelZip } from '../services/reelExport';
 
 const LANG_OPTIONS = [
   { value: 'typography',           label: 'Texto puro' },
@@ -36,6 +39,7 @@ export default function SeriesSlotEditor({
   const [isGeneratingCopy, setIsGeneratingCopy] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [isGeneratingCarousel, setIsGeneratingCarousel] = useState(false);
+  const [isComposingReel, setIsComposingReel] = useState(false);
   const [feedback, setFeedback] = useState(null);
 
   const [kicker, setKicker] = useState('');
@@ -140,6 +144,37 @@ export default function SeriesSlotEditor({
     if (field === 'script')     setScript(val);
     if (field === 'cta')        setCta(val);
     updateSlot(slot.number, { reelExtras: extras });
+  };
+
+  // Compose this reel slot into a HyperFrames package for agent hand-off render.
+  // Reuses the slot's own copy/coverFrame/script/cta — no AI regeneration.
+  const handleComposeReel = async () => {
+    setIsComposingReel(true);
+    setFeedback({ type: 'info', message: 'Componiendo el reel desde este slot…' });
+    try {
+      const slotForReel = {
+        ...slot,
+        copy: { ...slot.copy, headline, caption },
+        reelExtras: { coverFrame, script, cta },
+      };
+      const reelDoc = slotToReelScript(slotForReel);
+      const html = composeReelHtml({ brand, script: reelDoc });
+      const date = new Date().toISOString().slice(0, 10);
+      const label = `serie slot ${slot.number} ${slot.copy?.kicker || headline || ''}`.trim();
+      const template = { id: 'series-slot', name: label };
+      const pkg = buildReelPackage({ brand, template, script: reelDoc, html, date });
+      const wrote = await writeReelPackage(pkg);
+      if (wrote) {
+        setFeedback({ type: 'success', message: `Reel listo. Pedile al agente: "Renderizá el reel ${pkg.dir}"` });
+      } else {
+        await downloadReelZip(pkg);
+        setFeedback({ type: 'success', message: `Descargué ${pkg.slug}.zip. Descomprimilo en 05_outputs/reels/${brand?.id}/` });
+      }
+    } catch (err) {
+      setFeedback({ type: 'error', message: `No pude componer el reel: ${err.message}` });
+    } finally {
+      setIsComposingReel(false);
+    }
   };
 
   const handleGenerateCopy = async () => {
@@ -712,6 +747,13 @@ export default function SeriesSlotEditor({
                 placeholder="Pedime presupuesto → Link en bio."
               />
             </Field>
+            <Button
+              onClick={handleComposeReel}
+              disabled={isComposingReel}
+              title="Compila este slot a una composición HyperFrames y arma el paquete para que el agente lo renderice."
+            >
+              {isComposingReel ? 'Componiendo…' : 'Componer reel para render'}
+            </Button>
           </Card>
         )}
 
