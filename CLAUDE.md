@@ -42,6 +42,29 @@ Wizard de 5 pasos por marca, dentro de [src/App.jsx](src/App.jsx):
 
 ---
 
+## Creación de Reels
+
+Pestaña **Reels** (hermana de Series/Flyers). Genera reels en video brand-aware con
+hand-off al agente (el browser no puede renderizar).
+
+**Flujo (reel gráfico — HyperFrames):**
+1. Tab Reels → marca activa + plantilla (`src/services/reelTemplates.js`).
+2. IA escribe el guión por escena (`src/services/reelScript.js`).
+3. La app compila `reel.html` brand-aware (`src/services/reelComposer.js`) y arma el
+   paquete (`src/services/reelExport.js`).
+4. "Preparar para render" escribe `05_outputs/reels/<marca>/<fecha>-<slug>/` vía el
+   middleware dev de Vite (fallback: descarga ZIP).
+5. Pedirle al agente: *"Renderizá el reel `<carpeta>`"* → corre `npx hyperframes render`.
+
+**Fase 2 (editar video crudo — video-use):** la app generará un `edit-profile.json`; el
+video se deja en `05_outputs/reels/_inbox/<marca>/`; el agente transcribe, propone
+cortes, confirma y edita. No implementado aún.
+
+**Skills:** `.claude/skills/hyperframes*` y `.claude/skills/video-use`. El render NUNCA
+corre en el browser. Diseño completo: `docs/superpowers/specs/2026-05-28-reels-creation-design.md`.
+
+---
+
 ## Estructura del workspace
 
 | Carpeta / archivo | Uso |
