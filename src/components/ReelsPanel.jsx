@@ -16,6 +16,8 @@ export default function ReelsPanel({
   onOpenEditWizard,
   onLogout,
   geminiKey,
+  openaiKey,
+  preferredProvider,
 }) {
   const [templateId, setTemplateId] = useState(REEL_TEMPLATES[0].id);
   const [persona, setPersona] = useState(activeBrand?.defaults?.targetPersona || '');
@@ -29,7 +31,7 @@ export default function ReelsPanel({
     setBusy(true);
     setFeedback({ type: 'info', message: 'Generando guión…' });
     try {
-      const result = await generateReelScript(template, activeBrand, persona, geminiKey);
+      const result = await generateReelScript(template, activeBrand, persona, { geminiKey, openaiKey, preferredProvider });
       setScript(result);
       setFeedback({ type: 'success', message: 'Guión listo. Revisalo y preparalo para render.' });
     } catch (err) {

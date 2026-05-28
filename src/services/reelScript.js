@@ -1,4 +1,5 @@
 import { generateTextWithGemini } from './gemini.js';
+import { generateTextWithOpenAI } from './openai.js';
 
 // Pure: builds the instruction prompt for the per-scene reel script.
 export function buildReelScriptPrompt(template, brand, persona) {
@@ -32,24 +33,48 @@ export function buildReelScriptPrompt(template, brand, persona) {
   ].join('\n');
 }
 
-// Thin wrapper: calls the text engine in JSON mode and parses the result.
-export async function generateReelScript(template, brand, persona, geminiKey) {
+// Parses model output that may be wrapped in a ```json fence. Throws on bad JSON.
+function parseScriptJson(raw) {
+  if (typeof raw !== 'string') return raw;
+  const cleaned = raw.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '');
+  return JSON.parse(cleaned);
+}
+
+// Provider-aware: tries the preferred text engine first, then falls back to the
+// other, mirroring the rest of the app. Default preference is OpenAI.
+export async function generateReelScript(
+  template,
+  brand,
+  persona,
+  { geminiKey, openaiKey, preferredProvider = 'openai' } = {},
+) {
   const prompt = buildReelScriptPrompt(template, brand, persona);
-  const raw = await generateTextWithGemini(prompt, geminiKey, 'application/json');
-  let parsed;
-  try {
-    if (typeof raw === 'string') {
-      const cleaned = raw.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '');
-      parsed = JSON.parse(cleaned);
-    } else {
-      parsed = raw;
+  const order = preferredProvider === 'gemini' ? ['gemini', 'openai'] : ['openai', 'gemini'];
+
+  let lastError = null;
+  let triedAny = false;
+
+  for (const provider of order) {
+    if (provider === 'gemini' && !geminiKey) continue;
+    if (provider === 'openai' && !openaiKey) continue;
+    triedAny = true;
+    try {
+      const raw = provider === 'gemini'
+        ? await generateTextWithGemini(prompt, geminiKey, 'application/json')
+        : await generateTextWithOpenAI(prompt, openaiKey);
+      const parsed = parseScriptJson(raw);
+      return {
+        templateId: template.id,
+        scenes: Array.isArray(parsed?.scenes) ? parsed.scenes : [],
+        caption: typeof parsed?.caption === 'string' ? parsed.caption : '',
+      };
+    } catch (err) {
+      lastError = err;
     }
-  } catch {
-    throw new Error('La IA devolvió un formato inesperado. Intentá de nuevo.');
   }
-  return {
-    templateId: template.id,
-    scenes: Array.isArray(parsed?.scenes) ? parsed.scenes : [],
-    caption: typeof parsed?.caption === 'string' ? parsed.caption : '',
-  };
+
+  if (!triedAny) {
+    throw new Error('No hay API key configurada (OpenAI o Gemini). Cargala en Ajustes.');
+  }
+  throw new Error('La IA devolvió un formato inesperado o falló. Intentá de nuevo.');
 }

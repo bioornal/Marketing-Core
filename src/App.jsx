@@ -1774,6 +1774,8 @@ Cada objeto del array JSON debe tener la siguiente estructura exacta:
           onOpenSettings={() => setIsSettingsOpen(true)}
           onOpenEditWizard={handleOpenEditWizard}
           geminiKey={geminiKey}
+          openaiKey={openaiKey}
+          preferredProvider={preferredProvider}
         />
       ) : activeTab === 'ads' ? (
         <FlyerAdsPanel
