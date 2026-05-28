@@ -8,7 +8,12 @@ describe('slugify', () => {
 });
 
 describe('buildReelPackage', () => {
-  const brand = { id: 'selva-digital', name: 'Selva Digital' };
+  const brand = {
+    id: 'selva-digital',
+    name: 'Selva Digital',
+    website: 'selvadigital.com',
+    theme: { accent: '#2BB673', fonts: 'Geist & Inter' },
+  };
   const template = { id: 'data-impact', name: 'Dato que impacta', scenes: ['hook', 'cta'] };
   const script = {
     templateId: 'data-impact',
@@ -16,24 +21,27 @@ describe('buildReelPackage', () => {
     caption: 'Hola',
   };
 
-  it('builds a dir scoped to brand + date + slug and the three files', () => {
-    const pkg = buildReelPackage({ brand, template, script, html: '<html></html>', date: '2026-05-28' });
+  it('builds a dir scoped to brand + date + slug and only the brief + readme', () => {
+    const pkg = buildReelPackage({ brand, template, script, date: '2026-05-28' });
     expect(pkg.dir).toBe('05_outputs/reels/selva-digital/2026-05-28-dato-que-impacta');
-    expect(Object.keys(pkg.files).sort()).toEqual(['README.md', 'brief.json', 'reel.html']);
-    expect(pkg.files['reel.html']).toBe('<html></html>');
+    expect(Object.keys(pkg.files).sort()).toEqual(['README.md', 'brief.json']);
+    expect(pkg.files['reel.html']).toBeUndefined();
   });
 
-  it('brief.json is valid JSON carrying brand, template and caption', () => {
-    const pkg = buildReelPackage({ brand, template, script, html: '<html></html>', date: '2026-05-28' });
+  it('brief.json carries brand kit (theme), scenes and caption', () => {
+    const pkg = buildReelPackage({ brand, template, script, date: '2026-05-28' });
     const brief = JSON.parse(pkg.files['brief.json']);
     expect(brief.brand.id).toBe('selva-digital');
+    expect(brief.brand.theme.accent).toBe('#2BB673');
     expect(brief.templateId).toBe('data-impact');
+    expect(brief.scenes[0].heading).toBe('X');
     expect(brief.caption).toBe('Hola');
   });
 
-  it('README mentions the hyperframes render command', () => {
-    const pkg = buildReelPackage({ brand, template, script, html: '<html></html>', date: '2026-05-28' });
-    expect(pkg.files['README.md']).toContain('npx hyperframes render');
+  it('README tells the agent to compose and render with hyperframes', () => {
+    const pkg = buildReelPackage({ brand, template, script, date: '2026-05-28' });
+    expect(pkg.files['README.md']).toContain('Componé y renderizá');
+    expect(pkg.files['README.md']).toContain('hyperframes');
   });
 });
 
@@ -44,7 +52,7 @@ describe('deliverReel', () => {
   const template = { id: 'series-slot', name: 'Slot 1', scenes: ['hook', 'cta'] };
   const script = { scenes: [{ id: 'hook', heading: 'H', body: '' }], caption: 'c' };
 
-  it('composes, packages and writes via the endpoint, returning the dir', async () => {
+  it('packages the brief and writes via the endpoint, returning the dir', async () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true });
     vi.stubGlobal('fetch', fetchMock);
     const res = await deliverReel({ brand, template, script, date: '2026-05-28' });

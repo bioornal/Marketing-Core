@@ -161,7 +161,7 @@ export default function SeriesSlotEditor({
       const template = { id: 'series-slot', name: label };
       const { wrote, dir, slug } = await deliverReel({ brand, template, script: reelDoc });
       if (wrote) {
-        setFeedback({ type: 'success', message: `Reel listo. Pedile al agente: "Renderizá el reel ${dir}"` });
+        setFeedback({ type: 'success', message: `Reel listo. Pedile al agente: "Componé y renderizá el reel ${dir}"` });
       } else {
         setFeedback({ type: 'success', message: `Descargué ${slug}.zip. Descomprimilo en 05_outputs/reels/${brand?.id}/` });
       }

@@ -1,5 +1,4 @@
 import JSZip from 'jszip';
-import { composeReelHtml } from './reelComposer.js';
 
 export function slugify(text) {
   return String(text || '')
@@ -10,13 +9,20 @@ export function slugify(text) {
     .replace(/^-+|-+$/g, '');
 }
 
-// Pure: assembles the self-contained reel package (dir + files map).
-export function buildReelPackage({ brand, template, script, html, date }) {
+// Pure: assembles the reel brief package (dir + files map). The app does NOT
+// generate the video HTML — it hands off a rich brief (brand kit + scenes +
+// caption) and the agent composes a valid HyperFrames composition and renders it.
+export function buildReelPackage({ brand, template, script, date }) {
   const slug = slugify(template.name);
   const dir = `05_outputs/reels/${brand.id}/${date}-${slug}`;
 
   const brief = {
-    brand: { id: brand.id, name: brand.name },
+    brand: {
+      id: brand.id,
+      name: brand.name,
+      website: brand.website || '',
+      theme: brand.theme || {},
+    },
     templateId: template.id,
     templateName: template.name,
     scenes: script.scenes,
@@ -27,26 +33,24 @@ export function buildReelPackage({ brand, template, script, html, date }) {
   const readme = [
     `# Reel — ${brand.name} — ${template.name}`,
     '',
-    'Paquete listo para render con la skill HyperFrames.',
+    'Brief de reel para componer y renderizar con HyperFrames (lo hace el agente).',
     '',
-    'Para renderizar, pedile al agente:',
+    '`brief.json` trae la marca (colores, fuentes, logo), las escenas',
+    '(`heading` / `body`) y el `caption`.',
     '',
-    `> "Renderizá el reel \`${dir}\`"`,
+    'Pedile al agente:',
     '',
-    'El agente correrá:',
+    `> "Componé y renderizá el reel \`${dir}\`"`,
     '',
-    '```',
-    'npx hyperframes render reel.html',
-    '```',
-    '',
-    'y dejará el .mp4 en esta misma carpeta.',
+    'El agente: escribe un `index.html` HyperFrames válido (1080×1920, timeline',
+    'GSAP, colores de `brief.json`), corre `npx hyperframes lint` y',
+    '`npx hyperframes render --output reel.mp4`, y deja el MP4 en esta carpeta.',
   ].join('\n');
 
   return {
     slug,
     dir,
     files: {
-      'reel.html': html,
       'brief.json': JSON.stringify(brief, null, 2),
       'README.md': readme,
     },
@@ -87,11 +91,11 @@ export async function downloadReelZip(pkg) {
 }
 
 // Single delivery path shared by every reel source (Series slot, standalone tab).
-// Composes the HTML, builds the package, writes it to disk (or downloads a ZIP
-// fallback), and returns the outcome so the caller can show its own feedback.
+// Builds the brief package, writes it to disk (or downloads a ZIP fallback), and
+// returns the outcome so the caller can show its own feedback. The agent composes
+// + renders the HyperFrames video from the brief afterwards.
 export async function deliverReel({ brand, template, script, date = new Date().toISOString().slice(0, 10) }) {
-  const html = composeReelHtml({ brand, script });
-  const pkg = buildReelPackage({ brand, template, script, html, date });
+  const pkg = buildReelPackage({ brand, template, script, date });
   const wrote = await writeReelPackage(pkg);
   if (!wrote) {
     await downloadReelZip(pkg);

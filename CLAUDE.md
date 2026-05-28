@@ -56,13 +56,21 @@ hand-off al agente (el browser no puede renderizar).
   guión por escena (`src/services/reelScript.js`, provider-aware: OpenAI por defecto con
   fallback a Gemini) desde una plantilla (`src/services/reelTemplates.js`).
 
-**Flujo (reel gráfico — HyperFrames):**
-1. Origen: slot de Series (botón "Componer reel") **o** tab Reels (marca + plantilla).
-2. La app compila `reel.html` brand-aware (`src/services/reelComposer.js`) y arma el
-   paquete (`src/services/reelExport.js`).
+**Flujo (reel gráfico — HyperFrames) — la app arma el brief, el agente compone + renderiza:**
+1. Origen: slot de Series (botón "Componer reel para render") **o** tab Reels (marca + plantilla).
+2. La app arma el **paquete brief** (`src/services/reelExport.js` → `deliverReel`): un
+   `brief.json` con la marca (colores/fuentes/logo), las escenas (`heading`/`body`) y el
+   `caption`, más un `README.md`. **La app NO genera el HTML del video.**
 3. Se escribe en `05_outputs/reels/<marca>/<fecha>-<slug>/` vía el middleware dev de Vite
    (fallback: descarga ZIP).
-4. Pedirle al agente: *"Renderizá el reel `<carpeta>`"* → corre `npx hyperframes render`.
+4. Pedirle al agente: *"Componé y renderizá el reel `<carpeta>`"* → el agente escribe un
+   `index.html` HyperFrames válido (1080×1920, timeline GSAP, colores del `brief.json`),
+   corre `npx hyperframes lint` + `render` y deja el `reel.mp4` en la carpeta.
+
+> **Por qué el agente compone el HTML y no la app:** HyperFrames necesita un formato
+> específico (root `data-composition-id`, timeline GSAP en `window.__timelines`,
+> crossfades, fuentes auto-resueltas como Inter — Geist no está). Mantener un generador
+> de ese HTML en el frontend es frágil; el agente lo hace mejor con la skill `hyperframes`.
 
 **Fase 2 (editar video crudo — video-use):** la app generará un `edit-profile.json`; el
 video se deja en `05_outputs/reels/_inbox/<marca>/`; el agente transcribe, propone

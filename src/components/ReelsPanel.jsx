@@ -53,7 +53,7 @@ export default function ReelsPanel({
     try {
       const { wrote, dir, slug } = await deliverReel({ brand: activeBrand, template, script });
       if (wrote) {
-        setFeedback({ type: 'success', message: `Listo. Pedile al agente: "Renderizá el reel ${dir}"` });
+        setFeedback({ type: 'success', message: `Listo. Pedile al agente: "Componé y renderizá el reel ${dir}"` });
       } else {
         setFeedback({ type: 'info', message: `Endpoint no disponible: descargué ${slug}.zip. Descomprimilo en 05_outputs/reels/${activeBrand?.id}/` });
       }
