@@ -10,6 +10,7 @@ import { renderTextBackgroundAsync } from './services/composer';
 import { generateImageWithFalAI } from './services/falai';
 import SeriesPlanner from './components/SeriesPlanner';
 import FlyerAdsPanel from './components/FlyerAdsPanel';
+import ReelsPanel from './components/ReelsPanel';
 import WelcomePortal from './components/WelcomePortal';
 import { useActiveSeries } from './hooks/useSeries';
 import './styles/series.css';
@@ -1761,6 +1762,12 @@ Cada objeto del array JSON debe tener la siguiente estructura exacta:
               setIsStudioOpen(true);
             }}
           />
+      ) : activeTab === 'reels' ? (
+        <ReelsPanel
+          activeBrand={activeBrand}
+          geminiKey={geminiKey}
+          setActiveTab={setActiveTab}
+        />
       ) : activeTab === 'ads' ? (
         <FlyerAdsPanel
           onLogout={handleLogout}

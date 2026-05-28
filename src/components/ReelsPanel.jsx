@@ -7,6 +7,7 @@ import { buildReelPackage, writeReelPackage, downloadReelZip } from '../services
 export default function ReelsPanel({
   activeBrand,
   geminiKey,
+  setActiveTab,
 }) {
   const [templateId, setTemplateId] = useState(REEL_TEMPLATES[0].id);
   const [persona, setPersona] = useState(activeBrand?.defaults?.targetPersona || '');
@@ -60,6 +61,7 @@ export default function ReelsPanel({
 
   return (
     <div className="reels-panel" style={{ padding: 24, maxWidth: 720, margin: '0 auto' }}>
+      <button type="button" onClick={() => setActiveTab && setActiveTab('portal')} style={{ marginBottom: 16 }}>← Volver al inicio</button>
       <h2>Reels — {activeBrand?.name}</h2>
 
       <label>Plantilla</label>

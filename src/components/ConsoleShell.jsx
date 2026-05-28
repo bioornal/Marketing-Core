@@ -99,6 +99,15 @@ export default function ConsoleShell({
                 >
                   ADS
                 </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-pressed={activeTab === 'reels'}
+                  className="cs-tabs__btn"
+                  onClick={() => activeTab !== 'reels' && setActiveTab('reels')}
+                >
+                  REELS
+                </button>
               </div>
             </>
           )}
