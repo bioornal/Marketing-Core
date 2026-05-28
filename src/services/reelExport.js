@@ -1,4 +1,5 @@
 import JSZip from 'jszip';
+import { composeReelHtml } from './reelComposer.js';
 
 export function slugify(text) {
   return String(text || '')
@@ -83,4 +84,17 @@ export async function downloadReelZip(pkg) {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+// Single delivery path shared by every reel source (Series slot, standalone tab).
+// Composes the HTML, builds the package, writes it to disk (or downloads a ZIP
+// fallback), and returns the outcome so the caller can show its own feedback.
+export async function deliverReel({ brand, template, script, date = new Date().toISOString().slice(0, 10) }) {
+  const html = composeReelHtml({ brand, script });
+  const pkg = buildReelPackage({ brand, template, script, html, date });
+  const wrote = await writeReelPackage(pkg);
+  if (!wrote) {
+    await downloadReelZip(pkg);
+  }
+  return { wrote, dir: pkg.dir, slug: pkg.slug };
 }

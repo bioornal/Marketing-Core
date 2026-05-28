@@ -7,8 +7,7 @@ import { buildCopyPrompt, buildVisualPrompt, buildReelPrompt } from '../services
 import { generateCarouselSlides } from '../services/seriesAutoPlanner';
 import { getCtaPresets, getCtaPresetsGrouped } from '../services/ctaPresets';
 import { slotToReelScript } from '../services/reelFromSlot';
-import { composeReelHtml } from '../services/reelComposer';
-import { buildReelPackage, writeReelPackage, downloadReelZip } from '../services/reelExport';
+import { deliverReel } from '../services/reelExport';
 
 const LANG_OPTIONS = [
   { value: 'typography',           label: 'Texto puro' },
@@ -158,17 +157,13 @@ export default function SeriesSlotEditor({
         reelExtras: { coverFrame, script, cta },
       };
       const reelDoc = slotToReelScript(slotForReel);
-      const html = composeReelHtml({ brand, script: reelDoc });
-      const date = new Date().toISOString().slice(0, 10);
       const label = `serie slot ${slot.number} ${slot.copy?.kicker || headline || ''}`.trim();
       const template = { id: 'series-slot', name: label };
-      const pkg = buildReelPackage({ brand, template, script: reelDoc, html, date });
-      const wrote = await writeReelPackage(pkg);
+      const { wrote, dir, slug } = await deliverReel({ brand, template, script: reelDoc });
       if (wrote) {
-        setFeedback({ type: 'success', message: `Reel listo. Pedile al agente: "Renderizá el reel ${pkg.dir}"` });
+        setFeedback({ type: 'success', message: `Reel listo. Pedile al agente: "Renderizá el reel ${dir}"` });
       } else {
-        await downloadReelZip(pkg);
-        setFeedback({ type: 'success', message: `Descargué ${pkg.slug}.zip. Descomprimilo en 05_outputs/reels/${brand?.id}/` });
+        setFeedback({ type: 'success', message: `Descargué ${slug}.zip. Descomprimilo en 05_outputs/reels/${brand?.id}/` });
       }
     } catch (err) {
       setFeedback({ type: 'error', message: `No pude componer el reel: ${err.message}` });

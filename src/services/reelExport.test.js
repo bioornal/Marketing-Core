@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { slugify, buildReelPackage } from './reelExport.js';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { slugify, buildReelPackage, deliverReel } from './reelExport.js';
 
 describe('slugify', () => {
   it('lowercases, strips accents, and hyphenates', () => {
@@ -34,5 +34,21 @@ describe('buildReelPackage', () => {
   it('README mentions the hyperframes render command', () => {
     const pkg = buildReelPackage({ brand, template, script, html: '<html></html>', date: '2026-05-28' });
     expect(pkg.files['README.md']).toContain('npx hyperframes render');
+  });
+});
+
+describe('deliverReel', () => {
+  afterEach(() => { vi.unstubAllGlobals(); });
+
+  const brand = { id: 'selva-digital', name: 'Selva Digital', theme: {} };
+  const template = { id: 'series-slot', name: 'Slot 1', scenes: ['hook', 'cta'] };
+  const script = { scenes: [{ id: 'hook', heading: 'H', body: '' }], caption: 'c' };
+
+  it('composes, packages and writes via the endpoint, returning the dir', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal('fetch', fetchMock);
+    const res = await deliverReel({ brand, template, script, date: '2026-05-28' });
+    expect(fetchMock).toHaveBeenCalledWith('/__write-reel', expect.objectContaining({ method: 'POST' }));
+    expect(res).toEqual({ wrote: true, dir: '05_outputs/reels/selva-digital/2026-05-28-slot-1', slug: 'slot-1' });
   });
 });

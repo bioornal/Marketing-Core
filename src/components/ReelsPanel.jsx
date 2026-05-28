@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import ConsoleShell from './ConsoleShell.jsx';
 import { REEL_TEMPLATES, getReelTemplate } from '../services/reelTemplates.js';
 import { generateReelScript } from '../services/reelScript.js';
-import { composeReelHtml } from '../services/reelComposer.js';
-import { buildReelPackage, writeReelPackage, downloadReelZip } from '../services/reelExport.js';
+import { deliverReel } from '../services/reelExport.js';
 
 export default function ReelsPanel({
   activeBrand,
@@ -52,15 +51,11 @@ export default function ReelsPanel({
     setBusy(true);
     setFeedback({ type: 'info', message: 'Preparando paquete…' });
     try {
-      const html = composeReelHtml({ brand: activeBrand, script });
-      const date = new Date().toISOString().slice(0, 10);
-      const pkg = buildReelPackage({ brand: activeBrand, template, script, html, date });
-      const wrote = await writeReelPackage(pkg);
+      const { wrote, dir, slug } = await deliverReel({ brand: activeBrand, template, script });
       if (wrote) {
-        setFeedback({ type: 'success', message: `Listo. Pedile al agente: "Renderizá el reel ${pkg.dir}"` });
+        setFeedback({ type: 'success', message: `Listo. Pedile al agente: "Renderizá el reel ${dir}"` });
       } else {
-        await downloadReelZip(pkg);
-        setFeedback({ type: 'info', message: `Endpoint no disponible: descargué ${pkg.slug}.zip. Descomprimilo en 05_outputs/reels/${activeBrand?.id}/` });
+        setFeedback({ type: 'info', message: `Endpoint no disponible: descargué ${slug}.zip. Descomprimilo en 05_outputs/reels/${activeBrand?.id}/` });
       }
     } catch (err) {
       setFeedback({ type: 'error', message: `Error preparando el paquete: ${err.message}` });
